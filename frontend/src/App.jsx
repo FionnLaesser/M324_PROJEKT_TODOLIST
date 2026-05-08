@@ -1,117 +1,260 @@
-import { useEffect, useState } from 'react'
-import logo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
+const API_URL = 'http://localhost:8080'
+const DEFAULT_PRIORITY = 'Mittel'
+const PRIORITIES = ['Niedrig', 'Mittel', 'Hoch']
+
 function App() {
-  const [count, setCount] = useState(0)
-  const [todos, setTodos] = useState([]);
-  const [taskdescription, setTaskdescription] = useState("");
+  const [todos, setTodos] = useState([])
+  const [taskdescription, setTaskdescription] = useState('')
+  const [dueDate, setDueDate] = useState('')
+  const [priority, setPriority] = useState(DEFAULT_PRIORITY)
+  const [editingTask, setEditingTask] = useState(null)
+  const [editTaskdescription, setEditTaskdescription] = useState('')
+  const [editDueDate, setEditDueDate] = useState('')
+  const [editPriority, setEditPriority] = useState(DEFAULT_PRIORITY)
+  const [filterText, setFilterText] = useState('')
+  const [filterPriority, setFilterPriority] = useState('Alle')
 
-  /** Is called when the html form is submitted. It sends a POST request to the API endpoint '/tasks' and updates the component's state with the new todo.
-  ** In this case a new taskdecription is added to the actual list on the server.
-  */
-  const handleSubmit = event => {
-    event.preventDefault();
-    console.log("Sending task description to Spring-Server: "+taskdescription);
-    fetch("http://localhost:8080/tasks", {  // API endpoint (the complete URL!) to save a taskdescription
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ taskdescription: taskdescription }) // both 'taskdescription' are identical to Task-Class attribute in Spring
-    })
-    .then(response => {
-      console.log("Receiving answer after sending to Spring-Server: ");
-      console.log(response);
-      window.location.href = "/";
-      setTaskdescription("");             // clear input field, preparing it for the next input
-    })
-    .catch(error => console.log(error))
+  const getPriority = todo => todo.priority || DEFAULT_PRIORITY
+
+  const loadTasks = () => {
+    fetch(`${API_URL}/`)
+      .then(response => response.json())
+      .then(data => setTodos(data))
+      .catch(error => console.log(error))
   }
 
-   /** Is called when ever the html input field value below changes to update the component's state.
-  ** This is, because the submit should not take the field value directly.
-  ** The task property in the state is used to store the current value of the input field as the user types into it.
-  ** This is necessary because React operates on the principle of state and props, which means that a component's state
-  ** determines the component's behavior and render.
-  ** If we used the value directly from the HTML form field, we wouldn't be able to update the component's state and react to changes in the input field.
-  */
-  const handleChange = event => {
-    setTaskdescription(event.target.value);
-  }
-
-
-  /** Is called when the component is mounted (after any refresh or F5).
-  ** It updates the component's state with the fetched todos from the API Endpoint '/'.
-  */
   useEffect(() => {
-    fetch("http://localhost:8080/").then(response => response.json()).then(data => {
-      setTodos(data);
-    });
-  }, []);
+    loadTasks()
+  }, [])
 
+  const filteredTodos = useMemo(() => {
+    const normalizedFilter = filterText.trim().toLowerCase()
 
- /** Is called when the Done-Button is pressed. It sends a POST request to the API endpoint '/delete' and updates the component's state with the new todo.
-  ** In this case if the task with the unique taskdescription is found on the server, it will be removed from the list.
-  */
-  const handleDelete = (event, taskdescription) => {
-    console.log("Sending task description to delete on Spring-Server: "+taskdescription);
-    fetch(`http://localhost:8080/delete`, { // API endpoint (the complete URL!) to delete an existing taskdescription in the list
-      method: "POST",
-      body: JSON.stringify({ taskdescription: taskdescription }),
+    return todos.filter(todo => {
+      const descriptionMatches = todo.taskdescription.toLowerCase().includes(normalizedFilter)
+      const priorityMatches = filterPriority === 'Alle' || getPriority(todo) === filterPriority
+
+      return descriptionMatches && priorityMatches
+    })
+  }, [filterPriority, filterText, todos])
+
+  const createTaskPayload = (description, date, taskPriority) => ({
+    taskdescription: description.trim(),
+    dueDate: date,
+    priority: taskPriority || DEFAULT_PRIORITY,
+  })
+
+  const handleSubmit = event => {
+    event.preventDefault()
+
+    if (!taskdescription.trim()) {
+      return
+    }
+
+    fetch(`${API_URL}/tasks`, {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json"
-      }
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(createTaskPayload(taskdescription, dueDate, priority)),
     })
-    .then(response => {
-      console.log("Receiving answer after deleting on Spring-Server: ");
-      console.log(response);
-      window.location.href = "/";
-    })
-    .catch(error => console.log(error))
+      .then(() => {
+        setTaskdescription('')
+        setDueDate('')
+        setPriority(DEFAULT_PRIORITY)
+        loadTasks()
+      })
+      .catch(error => console.log(error))
   }
 
-  /**
-   * render all task lines
-   * @param {*} todos : Task list
-   * @returns html code snippet
-  */
-  const renderTasks = (todos) => {
+  const handleDelete = taskdescriptionToDelete => {
+    fetch(`${API_URL}/delete`, {
+      method: 'POST',
+      body: JSON.stringify({ taskdescription: taskdescriptionToDelete }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(() => loadTasks())
+      .catch(error => console.log(error))
+  }
+
+  const startEditing = todo => {
+    setEditingTask(todo.taskdescription)
+    setEditTaskdescription(todo.taskdescription)
+    setEditDueDate(todo.dueDate || '')
+    setEditPriority(getPriority(todo))
+  }
+
+  const cancelEditing = () => {
+    setEditingTask(null)
+    setEditTaskdescription('')
+    setEditDueDate('')
+    setEditPriority(DEFAULT_PRIORITY)
+  }
+
+  const handleUpdate = event => {
+    event.preventDefault()
+
+    if (!editTaskdescription.trim()) {
+      return
+    }
+
+    fetch(`${API_URL}/update`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        oldTaskdescription: editingTask,
+        ...createTaskPayload(editTaskdescription, editDueDate, editPriority),
+      }),
+    })
+      .then(() => {
+        cancelEditing()
+        loadTasks()
+      })
+      .catch(error => console.log(error))
+  }
+
+  const resetFilter = () => {
+    setFilterText('')
+    setFilterPriority('Alle')
+  }
+
+  const renderTaskContent = todo => {
+    if (editingTask === todo.taskdescription) {
+      return (
+        <form className="edit-form" onSubmit={handleUpdate}>
+          <input
+            aria-label="Task bearbeiten"
+            type="text"
+            value={editTaskdescription}
+            onChange={event => setEditTaskdescription(event.target.value)}
+          />
+          <input
+            aria-label="Fälligkeitsdatum bearbeiten"
+            type="date"
+            value={editDueDate}
+            onChange={event => setEditDueDate(event.target.value)}
+          />
+          <select
+            aria-label="Priorität bearbeiten"
+            value={editPriority}
+            onChange={event => setEditPriority(event.target.value)}
+          >
+            {PRIORITIES.map(priorityOption => (
+              <option key={priorityOption} value={priorityOption}>
+                {priorityOption}
+              </option>
+            ))}
+          </select>
+          <div className="task-actions">
+            <button type="submit">Speichern</button>
+            <button type="button" onClick={cancelEditing}>
+              Abbrechen
+            </button>
+          </div>
+        </form>
+      )
+    }
+
     return (
-      <ul className="todo-list">
-        {todos.map((todo, index) => (
-          <li key={todo.taskdescription}>
-            <span>{"Task " + (index+1) + ": "+ todo.taskdescription}</span>
-            <button onClick={(event) => handleDelete(event, todo.taskdescription) }>&#10004;</button>
-          </li>
-        ))}
-      </ul>
-    );
+      <>
+        <div className="task-info">
+          <span className="task-title">{todo.taskdescription}</span>
+          <span className="task-meta">Fällig: {todo.dueDate || 'Kein Datum'}</span>
+          <span className={`priority priority-${getPriority(todo).toLowerCase()}`}>
+            {getPriority(todo)}
+          </span>
+        </div>
+        <div className="task-actions">
+          <button type="button" onClick={() => startEditing(todo)}>
+            Bearbeiten
+          </button>
+          <button type="button" onClick={() => handleDelete(todo.taskdescription)}>
+            Erledigt
+          </button>
+        </div>
+      </>
+    )
   }
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <h1>
-          ToDo Liste
-        </h1>
-        <form onSubmit={handleSubmit} className='todo-form'>
-          <label htmlFor="taskdescription">Neues Todo anlegen:</label>
-          <input
-            type="text"
-            value={taskdescription}
-            onChange={handleChange}
-          />
+    <main className="app">
+      <section className="todo-shell">
+        <h1>ToDo Liste</h1>
+
+        <form onSubmit={handleSubmit} className="todo-form">
+          <label>
+            Neues Todo
+            <input
+              type="text"
+              value={taskdescription}
+              onChange={event => setTaskdescription(event.target.value)}
+            />
+          </label>
+          <label>
+            Fälligkeitsdatum
+            <input
+              type="date"
+              value={dueDate}
+              onChange={event => setDueDate(event.target.value)}
+            />
+          </label>
+          <label>
+            Priorität
+            <select value={priority} onChange={event => setPriority(event.target.value)}>
+              {PRIORITIES.map(priorityOption => (
+                <option key={priorityOption} value={priorityOption}>
+                  {priorityOption}
+                </option>
+              ))}
+            </select>
+          </label>
           <button type="submit">Absenden</button>
         </form>
-        <div>
-          {renderTasks(todos)}
+
+        <div className="filter-bar">
+          <label>
+            Filter
+            <input
+              type="search"
+              value={filterText}
+              onChange={event => setFilterText(event.target.value)}
+              placeholder="Task suchen"
+            />
+          </label>
+          <label>
+            Priorität
+            <select value={filterPriority} onChange={event => setFilterPriority(event.target.value)}>
+              <option value="Alle">Alle</option>
+              {PRIORITIES.map(priorityOption => (
+                <option key={priorityOption} value={priorityOption}>
+                  {priorityOption}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="button" onClick={resetFilter}>
+            Zurücksetzen
+          </button>
         </div>
-      </header>
-    </div>
-  );
+
+        <ul className="todo-list">
+          {filteredTodos.map((todo, index) => (
+            <li key={todo.taskdescription} className="todo-item">
+              <span className="task-number">Task {index + 1}</span>
+              {renderTaskContent(todo)}
+            </li>
+          ))}
+        </ul>
+      </section>
+    </main>
+  )
 }
 
 export default App

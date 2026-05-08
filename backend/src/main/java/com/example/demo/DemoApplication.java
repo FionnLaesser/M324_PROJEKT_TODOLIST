@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import jakarta.annotation.PostConstruct;
@@ -47,6 +46,45 @@ public class DemoApplication {
 	private List<Task> tasks = new ArrayList<>();
 	private final ObjectMapper mapper = new ObjectMapper();
 	private final Path storageFile = Path.of("data", "tasks.json");
+
+	public static class UpdateTaskRequest {
+		private String oldTaskdescription;
+		private String taskdescription;
+		private String dueDate;
+		private String priority;
+
+		public String getOldTaskdescription() {
+			return oldTaskdescription;
+		}
+
+		public void setOldTaskdescription(String oldTaskdescription) {
+			this.oldTaskdescription = oldTaskdescription;
+		}
+
+		public String getTaskdescription() {
+			return taskdescription;
+		}
+
+		public void setTaskdescription(String taskdescription) {
+			this.taskdescription = taskdescription;
+		}
+
+		public String getDueDate() {
+			return dueDate;
+		}
+
+		public void setDueDate(String dueDate) {
+			this.dueDate = dueDate;
+		}
+
+		public String getPriority() {
+			return priority;
+		}
+
+		public void setPriority(String priority) {
+			this.priority = priority;
+		}
+	}
 
 	@PostConstruct
 	public void loadTasks() {
@@ -101,6 +139,9 @@ public class DemoApplication {
 		try {
 			Task task;
 			task = mapper.readValue(taskdescription, Task.class);
+			if (task.getPriority() == null || task.getPriority().isBlank()) {
+				task.setPriority("Mittel");
+			}
 			for (Task t : tasks) {
 				if (t.getTaskdescription().equals(task.getTaskdescription())) {
 					System.out.println(">>>task: '" + task.getTaskdescription() + "' already exists!");
@@ -117,18 +158,49 @@ public class DemoApplication {
 	}
 
 	@CrossOrigin
+	@PostMapping("/update")
+	public String updateTask(@RequestBody String taskUpdate) {
+		System.out.println("API EP '/update': '" + taskUpdate + "'");
+		try {
+			UpdateTaskRequest update = mapper.readValue(taskUpdate, UpdateTaskRequest.class);
+			for (Task existingTask : tasks) {
+				boolean sameTask = existingTask.getTaskdescription().equals(update.getOldTaskdescription());
+				boolean sameDescription = existingTask.getTaskdescription().equals(update.getTaskdescription());
+				if (!sameTask && sameDescription) {
+					System.out.println(">>>task: '" + update.getTaskdescription() + "' already exists!");
+					return "redirect:/";
+				}
+			}
+
+			for (Task task : tasks) {
+				if (task.getTaskdescription().equals(update.getOldTaskdescription())) {
+					System.out.println("...updating task: '" + update.getOldTaskdescription() + "'");
+					task.setTaskdescription(update.getTaskdescription());
+					task.setDueDate(update.getDueDate());
+					task.setPriority(update.getPriority());
+					saveTasks();
+					return "redirect:/";
+				}
+			}
+			System.out.println(">>>task: '" + update.getOldTaskdescription() + "' not found!");
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		return "redirect:/";
+	}
+
+	@CrossOrigin
 	@PostMapping("/delete")
 	public String delTask(@RequestBody String taskdescription) {
 		System.out.println("API EP '/delete': '" + taskdescription + "'");
 		try {
 			Task task;
 			task = mapper.readValue(taskdescription, Task.class);
-			Iterator<Task> it = tasks.iterator();
-			while (it.hasNext()) {
-				Task t = it.next();
+			for (int i = 0; i < tasks.size(); i++) {
+				Task t = tasks.get(i);
 				if (t.getTaskdescription().equals(task.getTaskdescription())) {
 					System.out.println("...deleting task: '" + task.getTaskdescription() + "'");
-					it.remove();
+					tasks.remove(i);
 					saveTasks();
 					return "redirect:/";
 				}
