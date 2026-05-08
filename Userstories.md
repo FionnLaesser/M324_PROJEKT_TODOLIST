@@ -42,12 +42,13 @@ Als Benutzer möchte ich einen Task als erledigt markieren können, damit erledi
 - Beim Klick auf den Done-Button wird der entsprechende Task an das Backend zum Löschen gesendet.
 - Nach dem Löschen wird der Task nicht mehr in der Liste angezeigt.
 
-## 5. Tasks ohne dauerhafte Speicherung verwalten
+## 5. Tasks mit dauerhafter Speicherung verwalten
 
-Als Benutzer möchte ich die To-do-Liste während der laufenden Serversitzung verwenden, damit ich temporäre Aufgaben verwalten kann.
+Als Benutzer möchte ich meine To-do-Liste dauerhaft speichern können, damit meine Aufgaben auch nach einem Neustart des Servers weiterhin vorhanden sind.
 
 **Akzeptanzkriterien:**
 
-- Tasks werden im Backend während der Laufzeit gespeichert.
-- Nach einem Neustart des Backend-Servers sind die vorherigen Tasks nicht mehr vorhanden.
-- Es gibt keine dauerhafte Speicherung in einer Datenbank oder Datei.
+- Tasks werden im Backend dauerhaft gespeichert.
+- Nach einem Neustart des Backend-Servers sind die vorherigen Tasks weiterhin vorhanden.
+- Die Speicherung erfolgt in einer Datenbank oder Datei.
+- Tasks können nach dem Neustart wieder geladen und angezeigt werden.
