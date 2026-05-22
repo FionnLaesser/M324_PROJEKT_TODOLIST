@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pull-Requests.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> or <div class="page"></div> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="pull-request-dokumentation">Pull Request Dokumentation</h1>
+<p>Stand: 22.05.2026</p>
+<p>Repository URL:
+https://github.com/FionnLaesser/M324_PROJEKT_TODOLIST</p>
+<h2 id="was-ist-ein-pull-request">Was ist ein Pull Request?</h2>
+<p>Ein Pull Request ist eine Anfrage, Änderungen aus einem Branch in einen anderen
+Branch zu übernehmen. In unserem Projekt wird dafür ein Feature-Branch verwendet,
+der später in den <code>main</code>-Branch gemerged wird.</p>
+<p>Bei GitLab heisst das gleiche Prinzip meistens Merge Request. Die Bedeutung ist
+gleich: Änderungen werden zuerst separat vorbereitet und danach überprüft, bevor
+sie in den Hauptstand des Projekts übernommen werden.</p>
+<h2 id="warum-verwendet-man-pull-requests">Warum verwendet man Pull Requests?</h2>
+<p>Pull Requests helfen dabei, Änderungen kontrolliert in ein Projekt zu übernehmen.
+Sie sind besonders nützlich, wenn mehrere Personen am gleichen Projekt arbeiten.</p>
+<ul>
+<li>Änderungen werden überprüft, bevor sie in <code>main</code> kommen.</li>
+<li>Andere Personen können Feedback geben.</li>
+<li>Fehler werden früher erkannt.</li>
+<li>Die Code-Qualität wird verbessert.</li>
+<li>Der <code>main</code>-Branch bleibt stabiler.</li>
+<li>Der Ablauf bleibt nachvollziehbar, weil Commits, Kommentare und Reviews im Pull Request sichtbar sind.</li>
+</ul>
+<h2 id="vorbereitung">Vorbereitung</h2>
+<p>Vor dem Erstellen eines Pull Requests wird zuerst ein eigener Branch erstellt.
+Dieser Branch enthält die Änderungen, die später in <code>main</code> übernommen werden
+sollen.</p>
+<p>Wichtige Git-Befehle:</p>
+<pre class="hljs"><code><div>git checkout main
+git pull origin main
+git checkout -b feature/todo-validation
+git status
+git add .
+git commit -m <span class="hljs-string">&quot;Verhindere leere Todos&quot;</span>
+git push origin feature/todo-validation
+</div></code></pre>
+<p>In unserem Projekt wurde für die echte Änderung der Branch <code>feature/todo-validation</code>
+verwendet. Die Änderungen wurden dort vorbereitet und anschliessend auf GitHub
+hochgeladen.</p>
+<h2 id="echte-änderung-im-projekt">Echte Änderung im Projekt</h2>
+<p>Für die notenrelevante Pull-Request-Bewertung wurde eine kleine echte Änderung an
+der Todo-Liste umgesetzt.</p>
+<p>Problem:</p>
+<p>Leere Todos sollen nicht erstellt werden. Das gilt auch dann, wenn im Eingabefeld
+nur Leerzeichen stehen.</p>
+<p>Umsetzung:</p>
+<ul>
+<li>Im Frontend wird der Button <code>Absenden</code> deaktiviert, solange die Eingabe leer ist.</li>
+<li>Beim Absenden wird weiterhin geprüft, ob der Text nach dem Entfernen von Leerzeichen leer ist.</li>
+<li>Im Backend werden leere oder nur aus Leerzeichen bestehende Todo-Beschreibungen ignoriert.</li>
+<li>Ein kleiner Test prüft, dass ein Todo mit leerer Beschreibung nicht gespeichert wird.</li>
+</ul>
+<p>Geänderte Dateien:</p>
+<table>
+<thead>
+<tr>
+<th>Datei</th>
+<th>Änderung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>frontend/src/App.jsx</code></td>
+<td>Deaktiviert den Absenden-Button bei leerer Eingabe.</td>
+</tr>
+<tr>
+<td><code>backend/src/main/java/com/example/demo/DemoApplication.java</code></td>
+<td>Verhindert leere Todo-Einträge auch direkt über die API.</td>
+</tr>
+<tr>
+<td><code>backend/src/test/java/com/example/demo/DemoApplicationTests.java</code></td>
+<td>Ergänzt einen Test für leere Todo-Beschreibungen.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="pull-request-erstellen">Pull Request erstellen</h2>
+<p>Nach dem Push des Feature-Branches kann auf GitHub ein Pull Request erstellt
+werden. Dabei wird ausgewählt, von welchem Branch in welchen Zielbranch gemerged
+werden soll.</p>
+<p>Für dieses Projekt war die Auswahl:</p>
+<ul>
+<li>Base-Branch: <code>main</code></li>
+<li>Compare-Branch: <code>feature/todo-validation</code></li>
+</ul>
+<p>Danach wurden ein Titel und eine Beschreibung ergänzt. Die Beschreibung sollte
+kurz erklären, was geändert wurde und warum diese Änderung gemacht wurde.</p>
+<p><img src="screenshots/pull-request/02_pr_erstellen_formular.png" alt="Formular zum Erstellen des Pull Requests"></p>
+<h2 id="pull-request-überprüfen">Pull Request überprüfen</h2>
+<p>Nach dem Erstellen des Pull Requests zeigt GitHub an, ob die Änderungen gemerged
+werden können. Wichtig ist, dass keine Merge-Konflikte vorhanden sind.</p>
+<p>In unserem Fall zeigte GitHub den Status <code>Ready to merge</code>. Ausserdem wurde
+angezeigt, dass keine Konflikte mit dem Base-Branch vorhanden waren. Damit war
+der Pull Request technisch bereit für den Merge.</p>
+<p><img src="screenshots/pull-request/03_pr_offen_ready_to_merge.png" alt="Geöffneter Pull Request mit Status ready to merge"></p>
+<h2 id="pull-request-mergen">Pull Request mergen</h2>
+<p>Wenn der Pull Request überprüft wurde und keine Konflikte vorhanden sind, kann er
+in den <code>main</code>-Branch gemerged werden. Dafür wird auf GitHub zuerst die Schaltfläche
+<code>Merge pull request</code> verwendet.</p>
+<p>Anschliessend muss der Merge nochmals bestätigt werden. Dieser Schritt verhindert,
+dass Änderungen versehentlich in <code>main</code> übernommen werden.</p>
+<p><img src="screenshots/pull-request/04_pr_confirm_merge.png" alt="Confirm merge Schritt"></p>
+<p>Nach der Bestätigung zeigt GitHub an, dass der Pull Request erfolgreich gemerged
+wurde. Die Änderungen sind damit im <code>main</code>-Branch enthalten.</p>
+<p><img src="screenshots/pull-request/05_pr_erfolgreich_gemerged.png" alt="Pull Request erfolgreich gemerged"></p>
+<h2 id="nachweise-mit-screenshots">Nachweise mit Screenshots</h2>
+<p>Die folgenden Screenshots dokumentieren den Ablauf des Pull Requests.</p>
+<table>
+<thead>
+<tr>
+<th>Datei</th>
+<th>Zweck</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>01_pr_problem_keine_rechte.png</code></td>
+<td>Zeigt, dass zuerst kein Pull Request ins WISS-GB Repository erstellt werden konnte, weil nur Collaborators berechtigt waren.</td>
+<td>TODO: Screenshot <code>01_pr_problem_keine_rechte.png</code> einfügen</td>
+</tr>
+<tr>
+<td><code>02_pr_erstellen_formular.png</code></td>
+<td>Zeigt das Formular zum Erstellen des Pull Requests mit Titel und Beschreibung.</td>
+<td>Vorhanden</td>
+</tr>
+<tr>
+<td><code>03_pr_offen_ready_to_merge.png</code></td>
+<td>Zeigt den geöffneten Pull Request mit Status ready to merge und ohne Konflikte.</td>
+<td>Vorhanden</td>
+</tr>
+<tr>
+<td><code>04_pr_confirm_merge.png</code></td>
+<td>Zeigt den Schritt Confirm merge.</td>
+<td>Vorhanden</td>
+</tr>
+<tr>
+<td><code>05_pr_erfolgreich_gemerged.png</code></td>
+<td>Zeigt, dass der Pull Request erfolgreich in <code>main</code> gemerged wurde.</td>
+<td>Vorhanden</td>
+</tr>
+</tbody>
+</table>
+<p>TODO: Screenshot <code>01_pr_problem_keine_rechte.png</code> einfügen, sobald der passende
+Screenshot vorhanden ist.</p>
+<h2 id="bewertungspunkte-zur-todo-validierung">Bewertungspunkte zur Todo-Validierung</h2>
+<p>Die folgenden Abschnitte dokumentieren die notenrelevante Pull-Request-Arbeit zur
+Todo-Validierung. Es werden nur Bilder verwendet, die einen echten Arbeitsschritt
+zeigen. Es wird kein Screenshot verwendet, der die Meldung <code>There isn't anything to compare</code> enthält.</p>
+<h3 id="1-issue-erstellt">1. Issue erstellt</h3>
+<p>Für die Änderung wurde ein Issue erstellt. Das Issue beschreibt, dass leere Todos
+verhindert werden sollen und nennt die wichtigsten Akzeptanzkriterien.</p>
+<p><img src="screenshots/Issues/01_issue_erstellt.png" alt="Issue erstellt"></p>
+<h3 id="2-feature-branch-erstellt">2. Feature-Branch erstellt</h3>
+<p>Für die Umsetzung wurde ein eigener Branch erstellt. Der Branch heisst
+<code>feature/todo-validation</code> und trennt die Änderung vom <code>main</code>-Branch.</p>
+<p><img src="screenshots/Issues/02_feature_branch.png" alt="Feature-Branch erstellt"></p>
+<h3 id="3-änderungen-implementiert">3. Änderungen implementiert</h3>
+<p>Die Code-Änderung verhindert, dass leere Todo-Beschreibungen gespeichert werden.
+Dabei wird geprüft, ob die Beschreibung <code>null</code>, leer oder nur aus Leerzeichen
+besteht.</p>
+<p><img src="screenshots/Issues/03_code_aenderung.png" alt="Code-Änderung"></p>
+<h3 id="4-commit-mit-closes-2">4. Commit mit closes #2</h3>
+<p>Der Commit enthält den Bezug zum Issue mit <code>closes #2</code>. Dadurch kann GitHub das
+Issue nach dem Merge automatisch schliessen.</p>
+<p><img src="screenshots/Issues/04_commit_mit_issue_close.png" alt="Commit mit closes #2"></p>
+<h3 id="5-pull-request-erstellt">5. Pull Request erstellt</h3>
+<p>Der Pull Request wurde von <code>feature/todo-validation</code> nach <code>main</code> erstellt. Der
+Screenshot zeigt, dass GitHub echte Unterschiede erkennt und der Branch gemerged
+werden kann.</p>
+<p><img src="screenshots/Issues/05_pull_request_erstellt.png" alt="Pull Request erstellt"></p>
+<h3 id="6-sparring-als-reviewer">6. Sparring als Reviewer</h3>
+<p>Für das Review wurde eine andere Person als Reviewer eingetragen. Dadurch wird
+sichtbar, dass die Änderung nicht nur allein umgesetzt, sondern auch im Team
+angeschaut wurde.</p>
+<p><img src="screenshots/Issues/06_reviewer_sparring.png" alt="Reviewer eingetragen"></p>
+<h3 id="7-review-dokumentiert">7. Review dokumentiert</h3>
+<p>Das Review wurde im Pull Request dokumentiert. Der Kommentar bestätigt, dass die
+Änderung nachvollziehbar ist, das Issue erfüllt und keine Konflikte vorhanden
+sind.</p>
+<p><img src="screenshots/Issues/07_review_nachweis.png" alt="Review dokumentiert"></p>
+<h3 id="8-pull-request-genehmigt-und-durchgeführt">8. Pull Request genehmigt und durchgeführt</h3>
+<p>Der Pull Request war bereit zum Merge. GitHub zeigte keine Konflikte mit dem
+Base-Branch an. Damit konnte der Pull Request durchgeführt werden.</p>
+<p><img src="screenshots/Issues/08_pr_ready_to_merge.png" alt="Pull Request bereit zum Merge"></p>
+<h3 id="9-pull-request-online-gemerged">9. Pull Request online gemerged</h3>
+<p>Der Pull Request wurde online auf GitHub in den <code>main</code>-Branch gemerged. Damit
+wurden die Änderungen aus dem Feature-Branch in den Hauptstand übernommen.</p>
+<p><img src="screenshots/Issues/09_pr_erfolgreich_gemerged.png" alt="Pull Request online gemerged"></p>
+<h3 id="10-issue-automatisch-geschlossen">10. Issue automatisch geschlossen</h3>
+<p>Nach dem Merge wurde das Issue automatisch geschlossen, weil der Commit oder Pull
+Request den Hinweis <code>closes #2</code> enthielt.</p>
+<p><img src="screenshots/Issues/10_issue_automatisch_geschlossen.png" alt="Issue automatisch geschlossen"></p>
+<h3 id="11-lokales-repo-aktualisiert">11. Lokales Repo aktualisiert</h3>
+<p>Nach dem Online-Merge wurde lokal <code>main</code> aktualisiert. Der vorhandene Screenshot
+zeigt den Pull-Vorgang und den dabei sichtbaren lokalen Konfliktstand. Dieser
+Konflikt muss lokal bereinigt werden, bevor der Arbeitsstand vollständig sauber
+ist.</p>
+<p><img src="screenshots/Issues/11_lokales_repo_aktualisiert.png" alt="Lokales Repo aktualisiert"></p>
+<h2 id="nutzen-von-pull-requests">Nutzen von Pull Requests</h2>
+<p>Pull Requests erleichtern die Zusammenarbeit, weil Änderungen nicht direkt in den
+<code>main</code>-Branch geschrieben werden. Stattdessen werden sie zuerst in einem eigenen
+Branch gesammelt und danach überprüft.</p>
+<p>Ein grosser Vorteil ist, dass andere Personen den Code anschauen können, bevor er
+übernommen wird. Dadurch können Fehler, unklare Stellen oder fehlende Tests früher
+gefunden werden. Auch die Beschreibung im Pull Request hilft, die Änderung später
+nachzuvollziehen.</p>
+<p>Pull Requests können aber auch zusätzlichen Aufwand verursachen. Für sehr kleine
+Änderungen dauert der Ablauf manchmal länger als ein direkter Commit. Ausserdem
+kann ein Pull Request blockiert werden, wenn Reviews fehlen oder wenn es
+Merge-Konflikte gibt.</p>
+<p>Trotzdem ist der Nutzen für ein Teamprojekt grösser als der Aufwand. Pull Requests
+verbessern die Code-Qualität, machen Änderungen transparenter und schützen den
+<code>main</code>-Branch vor fehlerhaften oder unvollständigen Änderungen.</p>
+<h2 id="fazit">Fazit</h2>
+<p>In diesem Projekt wurde ein Feature-Branch erstellt, die Dokumentation zu Pull
+Requests ergänzt und der Branch über einen Pull Request in <code>main</code> gemerged. Die
+Screenshots zeigen die wichtigsten Schritte: Pull Request erstellen, Status prüfen,
+Merge bestätigen und erfolgreichen Merge kontrollieren.</p>
+<h2 id="quellen">Quellen</h2>
+<ul>
+<li>GitHub Docs: About pull requests, https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests</li>
+<li>GitHub Docs: Creating a pull request, https://docs.github.com/en/articles/creating-a-pull-request</li>
+<li>GitHub Docs: Merging a pull request, https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request</li>
+</ul>
+
+</body>
+</html>
