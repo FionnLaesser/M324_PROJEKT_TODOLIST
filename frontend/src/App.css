@@ -93,6 +93,16 @@ button:hover {
   background: #ffffff;
 }
 
+.todo-empty {
+  padding: 20px 14px;
+  border: 1px dashed #b8c2d2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font-weight: 700;
+  text-align: center;
+}
+
 .task-number {
   font-size: 14px;
   font-weight: 700;

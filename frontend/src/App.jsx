@@ -125,6 +125,14 @@ function App() {
     setFilterPriority('Alle')
   }
 
+  const getEmptyMessage = () => {
+    if (todos.length === 0) {
+      return 'Noch keine Tasks vorhanden.'
+    }
+
+    return 'Keine Tasks passen zum aktuellen Filter.'
+  }
+
   const renderTaskContent = todo => {
     if (editingTask === todo.taskdescription) {
       return (
@@ -245,12 +253,16 @@ function App() {
         </div>
 
         <ul className="todo-list">
-          {filteredTodos.map((todo, index) => (
-            <li key={todo.taskdescription} className="todo-item">
-              <span className="task-number">Task {index + 1}</span>
-              {renderTaskContent(todo)}
-            </li>
-          ))}
+          {filteredTodos.length === 0 ? (
+            <li className="todo-empty">{getEmptyMessage()}</li>
+          ) : (
+            filteredTodos.map((todo, index) => (
+              <li key={todo.taskdescription} className="todo-item">
+                <span className="task-number">Task {index + 1}</span>
+                {renderTaskContent(todo)}
+              </li>
+            ))
+          )}
         </ul>
       </section>
     </main>
