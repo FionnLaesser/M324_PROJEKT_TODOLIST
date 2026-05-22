@@ -139,6 +139,11 @@ public class DemoApplication {
 		try {
 			Task task;
 			task = mapper.readValue(taskdescription, Task.class);
+			if (task.getTaskdescription() == null || task.getTaskdescription().isBlank()) {
+				System.out.println(">>>empty task descriptions are ignored!");
+				return "redirect:/";
+			}
+			task.setTaskdescription(task.getTaskdescription().trim());
 			if (task.getPriority() == null || task.getPriority().isBlank()) {
 				task.setPriority("Mittel");
 			}
