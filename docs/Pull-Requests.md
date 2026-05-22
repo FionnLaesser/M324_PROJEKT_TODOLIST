@@ -35,7 +35,7 @@ Repository:
 - `FionnLaesser/M324_PROJEKT_TODOLIST`
 - Remote: `origin`
 - Hauptbranch: `main`
-- Beispielbranch fuer diese Aufgabe: `codex/pull-request-dokumentation`
+- Beispielbranch fuer diese Aufgabe: `feature/pull-request-dokumentation`
 
 Empfohlener Git-Ablauf im Terminal:
 
@@ -80,9 +80,9 @@ Nachweis des Arbeitsablaufs:
 
 | Schritt | Ergebnis |
 | --- | --- |
-| Branch erstellt | `codex/pull-request-dokumentation` |
+| Branch erstellt | `feature/pull-request-dokumentation` |
 | Zielbranch | `main` |
-| Pull-Request | Erstellen ueber `https://github.com/FionnLaesser/M324_PROJEKT_TODOLIST/pull/new/codex/pull-request-dokumentation` |
+| Pull-Request | Erstellen ueber `https://github.com/FionnLaesser/M324_PROJEKT_TODOLIST/pull/new/feature/pull-request-dokumentation` |
 | Review | Im Team durchfuehren: Code lesen, App starten, Fragen/Kommentare im PR notieren. |
 | Merge | Nach erfolgreichem Review in `main` mergen. |
 
