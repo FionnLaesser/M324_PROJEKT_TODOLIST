@@ -4,39 +4,115 @@
 
 .app {
   min-height: 100vh;
-  padding: 32px;
-  background: #f4f7fb;
-  color: #1f2937;
+  padding: 28px;
+  background: #eef2f1;
+  color: #202124;
 }
 
-.todo-shell {
-  width: min(1040px, 100%);
+.auth-view {
+  display: grid;
+  place-items: center;
+}
+
+.auth-panel {
+  width: min(420px, 100%);
+  padding: 28px;
+  border: 1px solid #d3d8d6;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.app-header,
+.workspace {
+  width: min(1180px, 100%);
   margin: 0 auto;
 }
 
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
 h1 {
-  margin: 0 0 24px;
-  font-size: 40px;
+  font-size: 34px;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.app-header p,
+.list-header p,
+.task-meta,
+.list-button small {
+  color: #5f6865;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.list-panel,
+.todo-shell {
+  min-width: 0;
+}
+
+.list-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.todo-shell {
+  display: grid;
+  gap: 16px;
+}
+
+.auth-form,
+.list-form,
+.join-panel,
+.todo-form,
+.filter-bar,
+.edit-form {
+  display: grid;
+  gap: 12px;
 }
 
 .todo-form,
 .filter-bar,
 .edit-form {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) 180px 160px auto;
-  gap: 12px;
+  grid-template-columns: minmax(180px, 1fr) 170px 150px auto;
   align-items: end;
 }
 
-.todo-form,
 .filter-bar {
-  margin-bottom: 18px;
-  padding: 16px 0;
-  border-bottom: 1px solid #d7dee8;
+  grid-template-columns: minmax(180px, 1fr) 150px auto;
+  padding-top: 16px;
+  border-top: 1px solid #d3d8d6;
 }
 
-.filter-bar {
-  grid-template-columns: minmax(220px, 1fr) 160px auto;
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.invite-link {
+  max-width: 100%;
 }
 
 label {
@@ -49,29 +125,126 @@ label {
 
 input,
 select {
+  width: 100%;
+  min-width: 0;
   min-height: 42px;
-  border: 1px solid #b8c2d2;
+  box-sizing: border-box;
+  border: 1px solid #b8c2bf;
   border-radius: 6px;
   padding: 0 10px;
   background: #ffffff;
-  color: #1f2937;
+  color: #202124;
   font: inherit;
+}
+
+input:focus,
+select:focus,
+button:focus-visible {
+  outline: 3px solid rgba(15, 118, 110, 0.25);
+  outline-offset: 2px;
 }
 
 button {
   min-height: 42px;
-  border: 1px solid #1f2937;
+  border: 1px solid #0f766e;
   border-radius: 6px;
   padding: 0 14px;
-  background: #1f2937;
+  background: #0f766e;
   color: #ffffff;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 button:hover {
-  background: #334155;
+  background: #115e59;
+}
+
+button:disabled {
+  border-color: #b8c2bf;
+  background: #dbe1df;
+  color: #6d7673;
+  cursor: not-allowed;
+}
+
+.secondary-button,
+.tab-button,
+.list-button {
+  background: #ffffff;
+  color: #202124;
+}
+
+.secondary-button:hover,
+.tab-button:hover,
+.list-button:hover {
+  background: #f4f7f6;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.tab-button.active,
+.list-button.active {
+  border-color: #0f766e;
+  background: #e0f2ef;
+  color: #0f4f4a;
+}
+
+.list-selector {
+  display: grid;
+  gap: 8px;
+}
+
+.list-button {
+  display: grid;
+  min-height: 52px;
+  justify-items: start;
+  align-content: center;
+  gap: 2px;
+  text-align: left;
+  white-space: normal;
+}
+
+.list-button span {
+  overflow-wrap: anywhere;
+}
+
+.banner,
+.error-message,
+.info-message {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.banner {
+  width: min(1180px, 100%);
+  box-sizing: border-box;
+  margin: 0 auto 18px;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+.error-message {
+  color: #b42318;
+}
+
+.banner.error-message {
+  border: 1px solid #f2b8b5;
+  background: #fff1f0;
+}
+
+.info-message {
+  color: #0f766e;
+}
+
+.banner.info-message {
+  border: 1px solid #9bd8d1;
+  background: #e6f7f4;
 }
 
 .todo-list {
@@ -84,21 +257,21 @@ button:hover {
 
 .todo-item {
   display: grid;
-  grid-template-columns: 82px minmax(0, 1fr) auto;
+  grid-template-columns: 84px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
   padding: 14px;
-  border: 1px solid #d7dee8;
+  border: 1px solid #d3d8d6;
   border-radius: 8px;
   background: #ffffff;
 }
 
 .todo-empty {
   padding: 20px 14px;
-  border: 1px dashed #b8c2d2;
+  border: 1px dashed #b8c2bf;
   border-radius: 8px;
   background: #ffffff;
-  color: #475569;
+  color: #5f6865;
   font-weight: 700;
   text-align: center;
 }
@@ -106,7 +279,7 @@ button:hover {
 .task-number {
   font-size: 14px;
   font-weight: 700;
-  color: #64748b;
+  color: #6d7673;
 }
 
 .task-info {
@@ -123,10 +296,6 @@ button:hover {
   overflow-wrap: anywhere;
   font-size: 18px;
   font-weight: 800;
-}
-
-.task-meta {
-  color: #475569;
 }
 
 .priority {
@@ -148,7 +317,7 @@ button:hover {
 
 .priority-hoch {
   background: #fee2e2;
-  color: #b91c1c;
+  color: #b42318;
 }
 
 .task-actions {
@@ -161,9 +330,19 @@ button:hover {
   grid-column: 2 / 4;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 860px) {
   .app {
     padding: 18px;
+  }
+
+  .app-header,
+  .list-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
   }
 
   .todo-form,

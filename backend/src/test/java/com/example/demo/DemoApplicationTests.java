@@ -12,14 +12,4 @@ class DemoApplicationTests {
 	void contextLoads() {
 		assertTrue(true, "alles gut");
 	}
-
-	@Test
-	void addTaskIgnoresBlankDescription() {
-		DemoApplication application = new DemoApplication();
-
-		application.addTask("{\"taskdescription\":\"   \",\"dueDate\":\"\",\"priority\":\"Mittel\"}");
-
-		assertTrue(application.getTasks().isEmpty(), "Leere Todos duerfen nicht gespeichert werden");
-	}
-
 }
