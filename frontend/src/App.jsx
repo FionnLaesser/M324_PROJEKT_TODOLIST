@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
+import { API_URL } from './config.js'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 const DEFAULT_PRIORITY = 'Mittel'
 const PRIORITIES = ['Niedrig', 'Mittel', 'Hoch']
 const AUTH_TOKEN_KEY = 'todo.auth.token'
