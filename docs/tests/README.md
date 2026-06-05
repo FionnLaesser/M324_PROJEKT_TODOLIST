@@ -49,14 +49,14 @@ Ergebnis: Erfolgreich.
 
 ## Screenshots
 
-![Backend-Tests erfolgreich](screenshots/tests/backend-tests-erfolgreich.png)
+![Backend-Tests erfolgreich](../screenshots/tests/backend-tests-erfolgreich.png)
 
-![Frontend-Tests erfolgreich](screenshots/tests/frontend-tests-erfolgreich.png)
+![Frontend-Tests erfolgreich](../screenshots/tests/frontend-tests-erfolgreich.png)
 
-![Branch](screenshots/tests/branch.png)
+![Branch](../screenshots/tests/branch.png)
 
-![Commits](screenshots/tests/commits.png)
+![Commits](../screenshots/tests/commits.png)
 
-![Pull Request](screenshots/tests/pull-request.png)
+![Pull Request](../screenshots/tests/pull-request.png)
 
-![Pull Request gemerged](screenshots/tests/pr-merged.png)
+![Pull Request gemerged](../screenshots/tests/pr-merged.png)
