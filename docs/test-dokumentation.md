@@ -47,18 +47,7 @@ npm run build
 
 Ergebnis: Erfolgreich.
 
-## Screenshot-Platzhalter
-
-Diese Screenshots müssen für die Abgabe oder den Pull Request noch eingefügt werden:
-
-- `docs/screenshots/backend-tests-erfolgreich.png`
-- `docs/screenshots/frontend-tests-erfolgreich.png`
-- `docs/screenshots/branch.png`
-- `docs/screenshots/commits.png`
-- `docs/screenshots/pull-request.png`
-- `docs/screenshots/pr-merged.png`
-
-Platzhalter:
+## Screenshots
 
 ![Backend-Tests erfolgreich](screenshots/backend-tests-erfolgreich.png)
 
