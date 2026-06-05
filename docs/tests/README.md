@@ -1,7 +1,7 @@
 # Test-Dokumentation
 
 ## Github
-Link: [Repository](https://github.com/FionnLaesser/M324_PROJEKT_TODOLIST)
+Link: [https://github.com/FionnLaesser/M324_PROJEKT_TODOLIST](https://github.com/FionnLaesser/M324_PROJEKT_TODOLIST)
 
 ## Backend-Tests
 
