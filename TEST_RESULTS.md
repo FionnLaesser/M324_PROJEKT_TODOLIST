@@ -34,10 +34,7 @@ testTaskGettersAndSetters()
 Alle Eigenschaften werden korrekt gespeichert und abgerufen
 
 **Beweismittel:**
-```
-[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
-[INFO] BUILD SUCCESS
-```
+<img width="947" height="332" alt="image" src="https://github.com/user-attachments/assets/47c7ca5f-30d6-4380-b446-f52f2aac9fc9" />
 
 ---
 
