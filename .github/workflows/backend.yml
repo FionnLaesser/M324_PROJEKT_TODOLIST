@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Maven Tests
+  build:
+    name: Maven Build
     runs-on: self-hosted
 
     defaults:
@@ -32,5 +32,22 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Run backend tests
-        run: mvn -B test
+      - name: Build and test backend
+        run: mvn -B package
+
+      - name: Upload backend package
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-package
+          path: backend/target/*.jar
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload backend test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/target/surefire-reports/
+          if-no-files-found: ignore
+          retention-days: 7
