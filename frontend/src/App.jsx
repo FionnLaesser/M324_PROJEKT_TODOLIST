@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
-import { API_URL } from './config.js'
+import { API_BASE_URL } from './config.js'
 
 const DEFAULT_PRIORITY = 'Mittel'
 const PRIORITIES = ['Niedrig', 'Mittel', 'Hoch']
@@ -113,14 +113,14 @@ function App() {
         headers.Authorization = `Bearer ${auth.token}`
       }
 
-      const response = await fetch(`${API_URL}${path}`, {
+      const response = await fetch(`${API_BASE_URL}${path}`, {
         ...options,
         headers,
       })
       const contentType = response.headers.get('content-type') || ''
       const payload = contentType.includes('application/json') ? await response.json() : null
 
-      if (response.status === 401 && !path.startsWith('/api/auth/')) {
+      if (response.status === 401 && !path.startsWith('/auth/')) {
         clearSession()
         throw new Error('Sitzung abgelaufen')
       }
@@ -135,7 +135,7 @@ function App() {
   )
 
   const loadLists = useCallback(async () => {
-    const data = await request('/api/lists')
+    const data = await request('/lists')
     setLists(data)
     setActiveListId(current =>
       data.some(list => String(list.id) === String(current)) ? current : String(data[0]?.id || ''),
@@ -150,7 +150,7 @@ function App() {
         return
       }
 
-      const data = await request(`/api/lists/${listId}/todos`)
+      const data = await request(`/lists/${listId}/todos`)
       setTodos(data)
     },
     [request],
@@ -196,7 +196,7 @@ function App() {
     setAuthError('')
 
     try {
-      const path = authMode === 'login' ? '/api/auth/login' : '/api/auth/register'
+      const path = authMode === 'login' ? '/auth/login' : '/auth/register'
       const data = await request(path, {
         method: 'POST',
         body: JSON.stringify(credentials),
@@ -216,7 +216,7 @@ function App() {
     setAppMessage('')
 
     try {
-      const list = await request('/api/lists', {
+      const list = await request('/lists', {
         method: 'POST',
         body: JSON.stringify({ name: newListName }),
       })
@@ -238,7 +238,7 @@ function App() {
     setAppMessage('')
 
     try {
-      const invite = await request(`/api/lists/${activeListId}/invites`, { method: 'POST' })
+      const invite = await request(`/lists/${activeListId}/invites`, { method: 'POST' })
       const url = `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(
         invite.inviteToken,
       )}`
@@ -261,7 +261,7 @@ function App() {
     setAppMessage('')
 
     try {
-      const list = await request(`/api/invitations/${encodeURIComponent(normalizedToken)}/join`, {
+      const list = await request(`/invitations/${encodeURIComponent(normalizedToken)}/join`, {
         method: 'POST',
       })
       await loadLists()
@@ -292,7 +292,7 @@ function App() {
     setAppMessage('')
 
     try {
-      await request(`/api/lists/${activeListId}/todos`, {
+      await request(`/lists/${activeListId}/todos`, {
         method: 'POST',
         body: JSON.stringify(createTaskPayload(todoForm)),
       })
@@ -308,7 +308,7 @@ function App() {
     setAppMessage('')
 
     try {
-      await request(`/api/lists/${activeListId}/todos/${todoId}`, { method: 'DELETE' })
+      await request(`/lists/${activeListId}/todos/${todoId}`, { method: 'DELETE' })
       await loadTodos(activeListId)
     } catch (error) {
       setAppError(error.message)
@@ -340,7 +340,7 @@ function App() {
     setAppMessage('')
 
     try {
-      await request(`/api/lists/${activeListId}/todos/${editingTaskId}`, {
+      await request(`/lists/${activeListId}/todos/${editingTaskId}`, {
         method: 'PUT',
         body: JSON.stringify(createTaskPayload(editForm)),
       })
