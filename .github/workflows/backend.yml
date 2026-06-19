@@ -15,7 +15,7 @@ permissions:
 jobs:
   build:
     name: Maven Build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     defaults:
       run:

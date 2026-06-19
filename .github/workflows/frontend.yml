@@ -15,7 +15,7 @@ permissions:
 jobs:
   test:
     name: Unit Tests and Build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     defaults:
       run:
@@ -54,7 +54,7 @@ jobs:
 
   e2e:
     name: Playwright Tests
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     defaults:
       run:
