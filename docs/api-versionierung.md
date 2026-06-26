@@ -83,7 +83,7 @@ Bewertung nach Kriterien:
 
 Für dieses Projekt wurde Request Header Versioning gewählt, weil die URLs sauber bleiben sollen. Statt `/api/v1/auth/login` wird wieder `/api/auth/login` verwendet. Die Version steht im Header `X-API-Version`.
 
-Das ist flexibler als URI Versioning, weil die Pfade nicht für jede Version geändert werden müssen. Später könnte man zum Beispiel Version 2 prüfen, ohne direkt alle URLs umzubenennen.
+Das ist flexibler als URI Versioning, weil die Pfade nicht für jede Version geändert werden müssen. In diesem Projekt gibt es darum einen kleinen Demo-Endpunkt `/api/version`, der mit Version 1 und Version 2 unterschiedliche Controller-Methoden verwendet.
 
 Der Nachteil ist, dass man den Header nicht direkt in der URL sieht. Deshalb muss das Frontend den Header automatisch mitsenden und die Dokumentation muss klar sein.
 
@@ -93,18 +93,21 @@ Der Nachteil ist, dass man den Header nicht direkt in der URL sieht. Deshalb mus
 2. Die Pfade wurden von `/api/v1/...` zurück auf `/api/...` geändert.
 3. Im Backend wurde ein zentraler Filter erstellt.
 4. Der Filter prüft bei API Requests den Header `X-API-Version`.
-5. Erlaubt ist aktuell nur der Wert `1`.
-6. Fehlt der Header oder ist er falsch, antwortet das Backend mit HTTP 400.
-7. CORS wurde angepasst, damit `X-API-Version` erlaubt ist.
-8. Das Frontend setzt den Header automatisch bei jedem API Request.
-9. Tests wurden angepasst.
-10. Docker und Nginx leiten wieder `/api/...` weiter.
+5. Erlaubt sind aktuell die Werte `1` und `2`.
+6. Die bestehende Todo API ist als Version 1 markiert.
+7. Der Endpunkt `GET /api/version` hat eine Methode für Version 1 und eine Methode für Version 2.
+8. Fehlt der Header oder ist er falsch, antwortet das Backend mit HTTP 400.
+9. CORS wurde angepasst, damit `X-API-Version` erlaubt ist.
+10. Das Frontend setzt den Header automatisch bei jedem API Request.
+11. Tests wurden angepasst.
+12. Docker und Nginx leiten wieder `/api/...` weiter.
 
 Wichtige Endpunkte:
 
 ```text
 POST /api/auth/register
 POST /api/auth/login
+GET  /api/version
 GET  /api/lists
 POST /api/lists
 POST /api/lists/{listId}/invites
@@ -156,6 +159,18 @@ curl -i -X POST http://localhost:8080/api/auth/login \
 ```
 
 Erwartung ohne Header: HTTP 400 mit einer Meldung zur API-Version.
+
+Version 1 und Version 2 am gleichen Endpunkt testen:
+
+```bash
+curl -i http://localhost:8080/api/version \
+  -H "X-API-Version: 1"
+
+curl -i http://localhost:8080/api/version \
+  -H "X-API-Version: 2"
+```
+
+Bei Version 1 kommt eine Antwort mit `"version":"1"`. Bei Version 2 kommt eine Antwort mit `"version":"2"`. Das zeigt, dass Spring Boot anhand des Headers auf eine andere Methode geht.
 
 ### Bekannte Probleme und Lösungen
 

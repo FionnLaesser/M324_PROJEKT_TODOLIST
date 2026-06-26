@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,6 +39,7 @@ class ApiVersioningTest {
 
 		assertThat(apiRoutes)
 				.contains(
+						"/api/version",
 						"/api/auth/register",
 						"/api/auth/login",
 						"/api/lists",
@@ -61,9 +63,9 @@ class ApiVersioningTest {
 	}
 
 	@Test
-	void apiRequestWithWrongVersionHeaderReturnsBadRequest() throws Exception {
+	void apiRequestWithUnsupportedVersionHeaderReturnsBadRequest() throws Exception {
 		mockMvc.perform(post("/api/auth/login")
-				.header("X-API-Version", "2")
+				.header("X-API-Version", "99")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{}"))
 				.andExpect(status().isBadRequest())
@@ -78,6 +80,33 @@ class ApiVersioningTest {
 				.content("{}"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("Eingaben sind ungültig"));
+	}
+
+	@Test
+	void apiVersionEndpointUsesOwnMethodForVersionOne() throws Exception {
+		mockMvc.perform(get("/api/version")
+				.header("X-API-Version", "1"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.version").value("1"))
+				.andExpect(jsonPath("$.status").value("aktiv"));
+	}
+
+	@Test
+	void apiVersionEndpointUsesOwnMethodForVersionTwo() throws Exception {
+		mockMvc.perform(get("/api/version")
+				.header("X-API-Version", "2"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.version").value("2"))
+				.andExpect(jsonPath("$.message", containsString("eigene Controller-Methode")));
+	}
+
+	@Test
+	void normalTodoApiIsOnlyMappedForVersionOne() throws Exception {
+		mockMvc.perform(post("/api/auth/login")
+				.header("X-API-Version", "2")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{}"))
+				.andExpect(status().isNotFound());
 	}
 
 	private Set<String> patterns(RequestMappingInfo mappingInfo) {

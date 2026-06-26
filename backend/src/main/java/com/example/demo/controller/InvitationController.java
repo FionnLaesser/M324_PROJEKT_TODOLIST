@@ -7,11 +7,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ListResponse;
+import com.example.demo.security.ApiVersionFilter;
 import com.example.demo.security.AuthenticatedUser;
 import com.example.demo.service.TodoListService;
 
 @RestController
-@RequestMapping("/api/invitations")
+@RequestMapping(value = "/api/invitations", headers = ApiVersionFilter.VERSION_1_HEADER)
 public class InvitationController {
 
 	private final TodoListService todoListService;

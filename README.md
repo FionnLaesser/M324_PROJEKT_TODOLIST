@@ -159,6 +159,8 @@ Die REST API nutzt Request Header Versioning. Die URL bleibt normal, zum Beispie
 X-API-Version: 1
 ```
 
+Für die Demo gibt es zusätzlich `GET /api/version`. Dieser Endpunkt hat je eine eigene Controller-Methode für Version 1 und Version 2.
+
 Mehr Details stehen hier: [docs/api-versionierung.md](docs/api-versionierung.md)
 
 Beispiel-Endpunkte:
@@ -166,6 +168,7 @@ Beispiel-Endpunkte:
 ```text
 POST /api/auth/register
 POST /api/auth/login
+GET  /api/version
 GET  /api/lists
 POST /api/lists
 GET  /api/lists/{listId}/todos
@@ -180,6 +183,18 @@ curl -i -X POST http://localhost:8080/api/auth/login \
   -H "X-API-Version: 1" \
   -d "{\"username\":\"lisa\",\"password\":\"geheimespasswort\"}"
 ```
+
+Version 1 und 2 mit curl zeigen:
+
+```bash
+curl -i http://localhost:8080/api/version \
+  -H "X-API-Version: 1"
+
+curl -i http://localhost:8080/api/version \
+  -H "X-API-Version: 2"
+```
+
+Ein unbekannter Header wie `X-API-Version: 99` wird weiterhin mit HTTP 400 abgelehnt.
 
 ## Tests
 

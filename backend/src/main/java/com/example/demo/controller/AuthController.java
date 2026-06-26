@@ -10,12 +10,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
+import com.example.demo.security.ApiVersionFilter;
 import com.example.demo.service.AuthService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(value = "/api/auth", headers = ApiVersionFilter.VERSION_1_HEADER)
 public class AuthController {
 
 	private final AuthService authService;

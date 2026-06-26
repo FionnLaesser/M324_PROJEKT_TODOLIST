@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.example.demo.dto.ApiErrorResponse;
 
@@ -48,6 +49,11 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiErrorResponse> handleDataIntegrity(DataIntegrityViolationException exception) {
 		LOGGER.warn("Data integrity violation", exception);
 		return build(HttpStatus.CONFLICT, "Datensatz konnte nicht gespeichert werden", List.of());
+	}
+
+	@ExceptionHandler(NoResourceFoundException.class)
+	public ResponseEntity<ApiErrorResponse> handleNoResourceFound() {
+		return build(HttpStatus.NOT_FOUND, "Endpoint nicht gefunden", List.of());
 	}
 
 	@ExceptionHandler(Exception.class)

@@ -1,14 +1,19 @@
 package com.example.demo.security;
 
 import java.io.IOException;
-import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.example.demo.dto.ApiErrorResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,7 +25,19 @@ import jakarta.servlet.http.HttpServletResponse;
 public class ApiVersionFilter extends OncePerRequestFilter {
 
 	public static final String API_VERSION_HEADER = "X-API-Version";
-	public static final String SUPPORTED_API_VERSION = "1";
+	public static final String API_VERSION_1 = "1";
+	public static final String API_VERSION_2 = "2";
+	public static final String VERSION_1_HEADER = API_VERSION_HEADER + "=" + API_VERSION_1;
+	public static final String VERSION_2_HEADER = API_VERSION_HEADER + "=" + API_VERSION_2;
+
+	private static final Set<String> SUPPORTED_API_VERSIONS = Set.of(API_VERSION_1, API_VERSION_2);
+
+	private final ObjectMapper objectMapper;
+
+	@Autowired
+	public ApiVersionFilter(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -32,7 +49,7 @@ public class ApiVersionFilter extends OncePerRequestFilter {
 
 		String apiVersion = request.getHeader(API_VERSION_HEADER);
 
-		if (SUPPORTED_API_VERSION.equals(apiVersion)) {
+		if (apiVersion != null && SUPPORTED_API_VERSIONS.contains(apiVersion)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
@@ -40,9 +57,10 @@ public class ApiVersionFilter extends OncePerRequestFilter {
 		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setCharacterEncoding("UTF-8");
-		response.getWriter().write("""
-				{"timestamp":"%s","status":400,"message":"API-Version fehlt oder wird nicht unterstützt","details":["Header X-API-Version: 1 mitsenden"]}
-				""".formatted(Instant.now()));
+		objectMapper.writeValue(response.getWriter(), ApiErrorResponse.of(
+				HttpServletResponse.SC_BAD_REQUEST,
+				"API-Version fehlt oder wird nicht unterstützt",
+				List.of("Header X-API-Version: 1 oder 2 mitsenden")));
 	}
 
 	private boolean isApiRequest(HttpServletRequest request) {
