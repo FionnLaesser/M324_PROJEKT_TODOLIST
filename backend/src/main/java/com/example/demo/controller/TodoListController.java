@@ -21,7 +21,7 @@ import com.example.demo.service.TodoListService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/lists")
+@RequestMapping("/api/lists")
 public class TodoListController {
 
 	private final TodoListService todoListService;

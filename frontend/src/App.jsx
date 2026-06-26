@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
-import { API_BASE_URL } from './config.js'
+import { API_BASE_URL, API_VERSION, API_VERSION_HEADER } from './config.js'
 
 const DEFAULT_PRIORITY = 'Mittel'
 const PRIORITIES = ['Niedrig', 'Mittel', 'Hoch']
@@ -103,7 +103,10 @@ function App() {
 
   const request = useCallback(
     async (path, options = {}) => {
-      const headers = { ...(options.headers || {}) }
+      const headers = {
+        [API_VERSION_HEADER]: API_VERSION,
+        ...(options.headers || {}),
+      }
 
       if (options.body !== undefined) {
         headers['Content-Type'] = 'application/json'

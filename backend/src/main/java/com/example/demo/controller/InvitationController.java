@@ -11,7 +11,7 @@ import com.example.demo.security.AuthenticatedUser;
 import com.example.demo.service.TodoListService;
 
 @RestController
-@RequestMapping("/api/v1/invitations")
+@RequestMapping("/api/invitations")
 public class InvitationController {
 
 	private final TodoListService todoListService;

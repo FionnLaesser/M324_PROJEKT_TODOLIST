@@ -15,7 +15,7 @@ import com.example.demo.service.AuthService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
 	private final AuthService authService;
