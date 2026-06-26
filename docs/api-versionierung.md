@@ -96,11 +96,12 @@ Der Nachteil ist, dass man den Header nicht direkt in der URL sieht. Deshalb mus
 5. Erlaubt sind aktuell die Werte `1` und `2`.
 6. Die bestehende Todo API ist als Version 1 markiert.
 7. Der Endpunkt `GET /api/version` hat eine Methode für Version 1 und eine Methode für Version 2.
-8. Fehlt der Header oder ist er falsch, antwortet das Backend mit HTTP 400.
-9. CORS wurde angepasst, damit `X-API-Version` erlaubt ist.
-10. Das Frontend setzt den Header automatisch bei jedem API Request.
-11. Tests wurden angepasst.
-12. Docker und Nginx leiten wieder `/api/...` weiter.
+8. `POST /api/auth/login` hat zusätzlich eine eigene Demo-Methode für Version 2.
+9. Fehlt der Header oder ist er falsch, antwortet das Backend mit HTTP 400.
+10. CORS wurde angepasst, damit `X-API-Version` erlaubt ist.
+11. Das Frontend setzt den Header automatisch bei jedem API Request.
+12. Tests wurden angepasst.
+13. Docker und Nginx leiten wieder `/api/...` weiter.
 
 Wichtige Endpunkte:
 
@@ -171,6 +172,17 @@ curl -i http://localhost:8080/api/version \
 ```
 
 Bei Version 1 kommt eine Antwort mit `"version":"1"`. Bei Version 2 kommt eine Antwort mit `"version":"2"`. Das zeigt, dass Spring Boot anhand des Headers auf eine andere Methode geht.
+
+Login mit Version 2 testen:
+
+```bash
+curl -i -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 2" \
+  -d "{}"
+```
+
+Diese Antwort kommt aus einer eigenen v2-Controller-Methode. So ist der Unterschied in Insomnia direkt sichtbar.
 
 ### Bekannte Probleme und Lösungen
 

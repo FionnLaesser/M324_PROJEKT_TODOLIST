@@ -194,6 +194,15 @@ curl -i http://localhost:8080/api/version \
   -H "X-API-Version: 2"
 ```
 
+Login mit Version 2 als Demo:
+
+```bash
+curl -i -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 2" \
+  -d "{}"
+```
+
 Ein unbekannter Header wie `X-API-Version: 99` wird weiterhin mit HTTP 400 abgelehnt.
 
 ## Tests

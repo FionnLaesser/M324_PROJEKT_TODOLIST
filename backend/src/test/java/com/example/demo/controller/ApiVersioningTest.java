@@ -101,12 +101,14 @@ class ApiVersioningTest {
 	}
 
 	@Test
-	void normalTodoApiIsOnlyMappedForVersionOne() throws Exception {
+	void authLoginUsesOwnMethodForVersionTwo() throws Exception {
 		mockMvc.perform(post("/api/auth/login")
 				.header("X-API-Version", "2")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{}"))
-				.andExpect(status().isNotFound());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.version").value("2"))
+				.andExpect(jsonPath("$.message", containsString("eigene Login-Methode")));
 	}
 
 	private Set<String> patterns(RequestMappingInfo mappingInfo) {
