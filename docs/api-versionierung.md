@@ -2,188 +2,186 @@
 
 ## 1. Einführung in REST API Versionierung mit Java und Spring Boot
 
-Eine REST API kann sich mit der Zeit ändern. Zum Beispiel kommen neue Felder dazu, alte Felder werden entfernt oder ein Endpoint bekommt eine andere Bedeutung. Wenn schon ein Frontend oder andere Clients die API verwenden, darf eine Änderung nicht einfach alles kaputt machen.
+Eine REST API kann sich im Laufe eines Projekts ändern. Es können neue Felder dazukommen, alte Endpunkte werden angepasst oder Antworten sehen anders aus. Wenn schon ein Frontend oder ein anderer Client die API nutzt, soll nicht plötzlich alles kaputt gehen.
 
-Darum kann man eine API versionieren. Die alte Version bleibt weiter erreichbar und eine neue Version kann sauber aufgebaut werden. In Spring Boot passiert das meistens direkt über die Routen in den Controllern oder über Header, die Spring bei den Requests auswertet.
-
-In diesem Projekt gibt es ein Spring Boot Backend und ein React Frontend. Die API hatte vorher Pfade wie `/api/auth/login` und `/api/lists`. Für die Versionierung wurde daraus `/api/v1/...`.
-
-## 2. Übersicht über verschiedene Versionierungsmethoden
-
-### URI Versioning
-
-Bei URI Versioning steht die Version direkt im Pfad.
-
-Beispiel:
-
-```text
-GET /api/v1/lists
-POST /api/v1/auth/login
-```
-
-Das ist sehr sichtbar und einfach zu testen. Man sieht die Version sofort im Browser, in curl und in den Frontend-Requests.
-
-### Request Parameter Versioning
-
-Bei dieser Variante steht die Version als Query Parameter in der URL.
-
-Beispiel:
-
-```text
-GET /api/lists?version=1
-```
-
-Der Pfad bleibt gleich, aber der Server muss den Parameter auswerten. Für kleine Projekte ist das oft weniger klar, weil die Version nicht Teil des eigentlichen Pfads ist.
-
-### Header Versioning
-
-Bei Header Versioning wird die Version in einem eigenen Header gesendet.
-
-Beispiel:
+Mit API-Versionierung kann man klar sagen, welche Version ein Client verwenden will. In diesem Projekt wird die Version über einen HTTP Header gesteuert:
 
 ```text
 X-API-Version: 1
 ```
 
-Die URL bleibt sauber. Dafür muss der Client immer den richtigen Header mitsenden. Das ist für Tests mit Browser oder einfachen Tools weniger sichtbar.
+Die URL bleibt dadurch normal, zum Beispiel:
+
+```text
+POST /api/auth/login
+GET  /api/lists
+```
+
+## 2. Übersicht über verschiedene Versionierungsmethoden
+
+### URI Versioning
+
+Die Version steht direkt im Pfad.
+
+```text
+GET /api/v1/lists
+```
+
+Das ist sehr sichtbar und einfach zu testen. Der Nachteil ist, dass die URL mit jeder Version anders wird.
+
+### Request Parameter Versioning
+
+Die Version wird als Query Parameter mitgegeben.
+
+```text
+GET /api/lists?version=1
+```
+
+Das ist einfach, aber der Parameter kann leicht vergessen werden. Ausserdem wirkt die URL weniger sauber.
+
+### Request Header Versioning
+
+Die Version wird in einem eigenen Header gesendet.
+
+```text
+X-API-Version: 1
+```
+
+Die URL bleibt gleich. Das passt gut, wenn man API-Versionierung nicht direkt im Pfad zeigen möchte. Der Client muss den Header aber immer mitsenden.
 
 ### Media Type / Accept Header Versioning
 
-Hier wird die Version über den `Accept` Header gesteuert.
-
-Beispiel:
+Die Version wird über den `Accept` Header gesteuert.
 
 ```text
 Accept: application/vnd.todo.v1+json
 ```
 
-Das ist fachlich sauber, weil es nahe am HTTP-Standard ist. Es ist aber auch die komplizierteste Variante und für dieses Schulprojekt eher zu viel.
+Das ist flexibel und fachlich sauber, aber für dieses Projekt zu kompliziert.
 
 ## 3. Bewertung der Methoden mit Vor- und Nachteilen
 
 | Methode | Vorteile | Nachteile | Eignung |
 | --- | --- | --- | --- |
-| URI Versioning | Einfach, gut sichtbar, leicht mit curl und Browser testbar | Die Version steht in der URL und muss bei neuen Versionen in den Pfaden geändert werden | Sehr gut für Schule und kleine Projekte |
-| Request Parameter Versioning | Pfad bleibt gleich, schnell umsetzbar | Weniger eindeutig, Parameter kann vergessen werden, Caching kann schwieriger werden | Mittel für kleine Projekte |
-| Header Versioning | URL bleibt sauber, flexibel für Clients | Nicht direkt im Browser sichtbar, Tests brauchen zusätzliche Header | Gut für grössere Projekte mit kontrollierten Clients |
-| Media Type Versioning | Sehr flexibel und HTTP-nah | Komplizierter, für Einsteiger weniger verständlich | Gut für professionelle APIs, zu viel für dieses Projekt |
+| URI Versioning | Sehr sichtbar, einfach mit Browser und curl | URL ändert sich pro Version | Gut für Schule und kleine Projekte |
+| Request Parameter Versioning | Schnell umgesetzt, Pfad bleibt gleich | Parameter kann vergessen werden | Mittel |
+| Request Header Versioning | URL bleibt sauber, flexibel, gut für Clients | Header ist im Browser nicht direkt sichtbar | Gut für dieses Projekt und grössere Projekte |
+| Media Type Versioning | Sehr flexibel und HTTP-nah | Für Einsteiger eher kompliziert | Eher für professionelle APIs |
 
-Bewertung nach den geforderten Kriterien:
+Bewertung nach Kriterien:
 
-| Kriterium | Beste Methode für dieses Projekt | Grund |
-| --- | --- | --- |
-| Einfachheit | URI Versioning | Der Pfad wird direkt in den Controllern angepasst. |
-| Verständlichkeit | URI Versioning | `/api/v1` ist sofort sichtbar. |
-| Wartbarkeit | URI Versioning | Für eine erste Version reicht eine klare Pfadstruktur. |
-| Flexibilität | Header oder Media Type | Diese Varianten sind flexibler, aber auch komplexer. |
-| Schule / kleines Projekt | URI Versioning | Es ist einfach erklärbar und gut testbar. |
-| Grössere Projekte | Header oder Media Type | Dort sind mehrere Clients und lange Laufzeiten wahrscheinlicher. |
+| Kriterium | Bewertung für Header Versioning |
+| --- | --- |
+| Einfachheit | Mittel. Ein Header muss im Backend geprüft und im Frontend gesetzt werden. |
+| Verständlichkeit | Gut, wenn der Header dokumentiert ist. |
+| Wartbarkeit | Gut, weil die URLs stabil bleiben. |
+| Flexibilität | Gut, weil später weitere Versionen über denselben Pfad möglich sind. |
+| Schule / kleines Projekt | Gut, weil man Header und zentrale Prüfung lernt. |
+| Grössere Projekte | Gut, weil Clients gezielt eine Version anfordern können. |
 
-## 4. Begründung der gewählten Methode
+## 4. Begründung, warum Request Header Versioning gewählt wurde
 
-Für dieses Projekt wurde URI Versioning gewählt.
+Für dieses Projekt wurde Request Header Versioning gewählt, weil die URLs sauber bleiben sollen. Statt `/api/v1/auth/login` wird wieder `/api/auth/login` verwendet. Die Version steht im Header `X-API-Version`.
 
-Der wichtigste Grund ist, dass es zu einem Schulprojekt passt. Die Version ist direkt im Endpoint sichtbar und man kann sie mit curl, im Frontend und in Tests einfach prüfen. Das Projekt hatte bereits `/api/...` Pfade. Darum war die Änderung auf `/api/v1/...` sauber und ohne neue Technik möglich.
+Das ist flexibler als URI Versioning, weil die Pfade nicht für jede Version geändert werden müssen. Später könnte man zum Beispiel Version 2 prüfen, ohne direkt alle URLs umzubenennen.
 
-Andere Varianten wären fachlich auch möglich. Header Versioning oder Media Type Versioning wären aber für dieses Projekt unnötig kompliziert, weil es aktuell nur eine kleine API und ein eigenes Frontend gibt.
-
-Pragmatische Entscheidung: Es gibt im Moment nur Version 1. Alte `/api/...` Pfade ohne `/v1` werden nicht zusätzlich unterstützt, damit die API klar bleibt.
+Der Nachteil ist, dass man den Header nicht direkt in der URL sieht. Deshalb muss das Frontend den Header automatisch mitsenden und die Dokumentation muss klar sein.
 
 ## 5. Schritt-für-Schritt-Anleitung zur Umsetzung im Projekt
 
-1. Alle REST Controller suchen.
-2. Die vorhandenen `@RequestMapping` Pfade prüfen.
-3. Alle bestehenden `/api/...` Pfade auf `/api/v1/...` ändern.
-4. Die Security Config anpassen, damit Login und Registrierung unter `/api/v1/auth/...` öffentlich bleiben.
-5. Die Frontend-Basis-URL von `/api` auf `/api/v1` ändern.
-6. Frontend-Tests und Playwright-Mocks auf `/api/v1` anpassen.
-7. Einen Backend-Test ergänzen, der die Controller-Routen prüft.
-8. README mit einem kurzen Hinweis auf diese Dokumentation ergänzen.
+1. Alle REST Controller wurden geprüft.
+2. Die Pfade wurden von `/api/v1/...` zurück auf `/api/...` geändert.
+3. Im Backend wurde ein zentraler Filter erstellt.
+4. Der Filter prüft bei API Requests den Header `X-API-Version`.
+5. Erlaubt ist aktuell nur der Wert `1`.
+6. Fehlt der Header oder ist er falsch, antwortet das Backend mit HTTP 400.
+7. CORS wurde angepasst, damit `X-API-Version` erlaubt ist.
+8. Das Frontend setzt den Header automatisch bei jedem API Request.
+9. Tests wurden angepasst.
+10. Docker und Nginx leiten wieder `/api/...` weiter.
 
-Angepasste wichtige Endpoints:
+Wichtige Endpunkte:
 
 ```text
-POST /api/v1/auth/register
-POST /api/v1/auth/login
-GET  /api/v1/lists
-POST /api/v1/lists
-POST /api/v1/lists/{listId}/invites
-POST /api/v1/invitations/{token}/join
-GET  /api/v1/lists/{listId}/todos
-POST /api/v1/lists/{listId}/todos
-PUT  /api/v1/lists/{listId}/todos/{todoId}
-DELETE /api/v1/lists/{listId}/todos/{todoId}
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/lists
+POST /api/lists
+POST /api/lists/{listId}/invites
+POST /api/invitations/{token}/join
+GET  /api/lists/{listId}/todos
+POST /api/lists/{listId}/todos
+PUT  /api/lists/{listId}/todos/{todoId}
+DELETE /api/lists/{listId}/todos/{todoId}
 ```
 
-Swagger oder OpenAPI war im Projekt nicht eingerichtet. Darum musste dort nichts angepasst werden.
+## 6. Testen der Header-Versionierung
 
-## 6. Testen der Versionierung
-
-### Backend Tests
-
-Im Backend kann man die Tests so starten:
+Backend Tests:
 
 ```bash
 cd backend
 ./mvnw test
 ```
 
-Der Test `ApiVersioningTest` prüft, dass die Controller-Routen mit `/api/v1/` beginnen.
+Frontend Tests:
 
-### Frontend Build
+```bash
+cd frontend
+npm test -- --runInBand
+```
 
-Im Frontend kann man prüfen, ob die angepasste API-Basis-URL sauber gebaut wird:
+Frontend Build:
 
 ```bash
 cd frontend
 npm run build
 ```
 
-### curl Beispiele
-
-Registrieren:
+Login mit korrektem Header:
 
 ```bash
-curl -i -X POST http://localhost:8080/api/v1/auth/register \
+curl -i -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 1" \
+  -d "{\"username\":\"lisa\",\"password\":\"geheimespasswort\"}"
+```
+
+Beispiel ohne Header:
+
+```bash
+curl -i -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{\"username\":\"lisa\",\"password\":\"geheimespasswort\"}"
 ```
 
-Einloggen:
+Erwartung ohne Header: HTTP 400 mit einer Meldung zur API-Version.
+
+### Bekannte Probleme und Lösungen
+
+#### Fehlendes JWT_SECRET
+
+Ohne Konfiguration kann das Backend nicht sicher Tokens erstellen. Für Docker und Produktion muss `JWT_SECRET` gesetzt sein. Für den lokalen Maven-Start gibt es ein `dev` Profil mit einem Dev-Default.
+
+Beispielwerte stehen in `.env.example`.
+
+#### 502 Bad Gateway im Frontend
+
+Ein 502 Fehler entsteht meistens, wenn Nginx das Backend nicht erreicht. Das passiert zum Beispiel, wenn das Backend wegen fehlendem `JWT_SECRET` oder wegen falschen Datenbank-Zugangsdaten nicht startet.
+
+Prüfen:
 
 ```bash
-curl -i -X POST http://localhost:8080/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d "{\"username\":\"lisa\",\"password\":\"geheimespasswort\"}"
+docker compose ps
+docker compose logs backend
 ```
 
-Listen abrufen:
+#### Header fehlt im Frontend
 
-```bash
-curl -i http://localhost:8080/api/v1/lists \
-  -H "Authorization: Bearer <TOKEN>"
-```
-
-Neue Liste erstellen:
-
-```bash
-curl -i -X POST http://localhost:8080/api/v1/lists \
-  -H "Authorization: Bearer <TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d "{\"name\":\"Schule\"}"
-```
-
-Todo erstellen:
-
-```bash
-curl -i -X POST http://localhost:8080/api/v1/lists/1/todos \
-  -H "Authorization: Bearer <TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d "{\"taskdescription\":\"Mathe lernen\",\"dueDate\":\"2026-06-30\",\"priority\":\"Hoch\"}"
-```
+Das Frontend setzt den Header zentral in `App.jsx`. Dadurch muss er nicht bei jedem einzelnen Request von Hand gesetzt werden.
 
 ## 7. Zusammenfassung und Schlussfolgerung
 
-Die API ist jetzt mit `/api/v1` versioniert. URI Versioning ist für dieses Projekt die beste Wahl, weil es einfach, sichtbar und gut testbar ist. Für grössere Projekte können Header oder Media Type Versioning später sinnvoller sein, wenn mehrere Clients unterstützt werden müssen.
+Die API verwendet jetzt Request Header Versioning mit `X-API-Version: 1`. Die URLs bleiben normal unter `/api/...`. Das Frontend sendet die Version automatisch mit. Das Backend lehnt Requests ohne passende Version mit HTTP 400 ab.
 
-Für die aktuelle Aufgabe ist die Lösung bewusst einfach gehalten. Sie passt zum bestehenden Spring Boot Backend und zum React Frontend, ohne unnötige neue Konzepte einzubauen.
+Die Lösung ist etwas weniger sichtbar als URI Versioning, aber flexibler und sauber dokumentiert.
