@@ -37,11 +37,11 @@ describe('App', () => {
   test('meldet Benutzer an und speichert die Sitzung', async () => {
     const user = userEvent.setup()
     const fetchMock = mockFetch(url => {
-      if (String(url).endsWith('/api/v1/auth/login')) {
+      if (String(url).endsWith('/api/auth/login')) {
         return jsonResponse({ token: 'jwt-token', userId: 5, username: 'lisa' })
       }
 
-      if (String(url).endsWith('/api/v1/lists')) {
+      if (String(url).endsWith('/api/lists')) {
         return jsonResponse([])
       }
 
@@ -56,9 +56,13 @@ describe('App', () => {
 
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
-        'http://localhost:8080/api/v1/auth/login',
+        'http://localhost:8080/api/auth/login',
         expect.objectContaining({
           method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            'X-API-Version': '1',
+          }),
           body: JSON.stringify({ username: 'lisa', password: 'geheim' }),
         }),
       ),
@@ -71,11 +75,11 @@ describe('App', () => {
     setupAuthenticatedSession()
     const user = userEvent.setup()
     mockFetch(url => {
-      if (String(url).endsWith('/api/v1/lists')) {
+      if (String(url).endsWith('/api/lists')) {
         return jsonResponse([{ id: 10, name: 'Schule', role: 'OWNER', ownerUsername: 'lisa' }])
       }
 
-      if (String(url).endsWith('/api/v1/lists/10/todos')) {
+      if (String(url).endsWith('/api/lists/10/todos')) {
         return jsonResponse([
           {
             id: 1,

@@ -7,18 +7,30 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest
+@AutoConfigureMockMvc
 class ApiVersioningTest {
 
 	@Autowired
 	private RequestMappingHandlerMapping handlerMapping;
 
+	@Autowired
+	private MockMvc mockMvc;
+
 	@Test
-	void controllerRoutesUseV1ApiPrefix() {
+	void controllerRoutesUseNormalApiPrefix() {
 		Set<String> apiRoutes = handlerMapping.getHandlerMethods().entrySet().stream()
 				.filter(entry -> entry.getValue().getBeanType().getPackageName().equals("com.example.demo.controller"))
 				.flatMap(entry -> patterns(entry.getKey()).stream())
@@ -26,17 +38,46 @@ class ApiVersioningTest {
 
 		assertThat(apiRoutes)
 				.contains(
-						"/api/v1/auth/register",
-						"/api/v1/auth/login",
-						"/api/v1/lists",
-						"/api/v1/lists/{listId}/invites",
-						"/api/v1/lists/{listId}/todos",
-						"/api/v1/lists/{listId}/todos/{todoId}",
-						"/api/v1/invitations/{token}/join")
-				.allMatch(route -> route.startsWith("/api/v1/"));
+						"/api/auth/register",
+						"/api/auth/login",
+						"/api/lists",
+						"/api/lists/{listId}/invites",
+						"/api/lists/{listId}/todos",
+						"/api/lists/{listId}/todos/{todoId}",
+						"/api/invitations/{token}/join")
+				.allMatch(route -> route.startsWith("/api/"));
 
 		assertThat(apiRoutes)
-				.noneMatch(route -> route.startsWith("/api/") && !route.startsWith("/api/v1/"));
+				.noneMatch(route -> route.startsWith("/api/v1/"));
+	}
+
+	@Test
+	void apiRequestWithoutVersionHeaderReturnsBadRequest() throws Exception {
+		mockMvc.perform(post("/api/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message", containsString("API-Version")));
+	}
+
+	@Test
+	void apiRequestWithWrongVersionHeaderReturnsBadRequest() throws Exception {
+		mockMvc.perform(post("/api/auth/login")
+				.header("X-API-Version", "2")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message", containsString("API-Version")));
+	}
+
+	@Test
+	void apiRequestWithSupportedVersionHeaderReachesController() throws Exception {
+		mockMvc.perform(post("/api/auth/login")
+				.header("X-API-Version", "1")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Eingaben sind ungültig"));
 	}
 
 	private Set<String> patterns(RequestMappingInfo mappingInfo) {
