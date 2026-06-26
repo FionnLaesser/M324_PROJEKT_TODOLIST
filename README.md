@@ -5,6 +5,30 @@
 ToDo-Liste mit React (frontend) und Spring (backend). Weitere Details sind in den
 Kommentaren vor allem in App.js zu finden.
 
+## REST API Versionierung
+
+Die REST API ist mit URI Versioning umgesetzt. Alle Backend-Endpunkte verwenden jetzt den Prefix `/api/v1`, weil das für dieses Schulprojekt am einfachsten sichtbar und testbar ist.
+
+Ausführliche Dokumentation: [docs/api-versionierung.md](docs/api-versionierung.md)
+
+Beispiel-Endpunkte:
+
+```text
+POST /api/v1/auth/login
+GET  /api/v1/lists
+POST /api/v1/lists
+GET  /api/v1/lists/{listId}/todos
+POST /api/v1/lists/{listId}/todos
+```
+
+Kurzes curl Beispiel:
+
+```bash
+curl -i -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d "{\"username\":\"lisa\",\"password\":\"geheimespasswort\"}"
+```
+
 **Liebe Lernende, bitte FORKT dieses Repo für M324, und macht die Pull-Requests in euren FORKS.**
 
 ## Relevante Dateien in den Teil-Projekten (Verzeichnisse):
