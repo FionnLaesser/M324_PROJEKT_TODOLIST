@@ -22,7 +22,7 @@ import com.example.demo.service.TodoService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/lists/{listId}/todos")
+@RequestMapping("/api/v1/lists/{listId}/todos")
 public class TodoController {
 
 	private final TodoService todoService;
