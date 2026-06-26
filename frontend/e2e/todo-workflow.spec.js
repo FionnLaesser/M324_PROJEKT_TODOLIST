@@ -39,7 +39,7 @@ const setupApiMock = async page => {
   let lists = []
   const todosByList = new Map()
 
-  await page.route('**/api/**', async route => {
+  await page.route('**/api/v1/**', async route => {
     const request = route.request()
     const method = request.method()
     const path = new URL(request.url()).pathname
@@ -48,15 +48,15 @@ const setupApiMock = async page => {
       return respondEmpty(route)
     }
 
-    if (method === 'POST' && path === '/api/auth/login') {
+    if (method === 'POST' && path === '/api/v1/auth/login') {
       return respondJson(route, { token: 'e2e-token', userId: 1, username: 'lisa' })
     }
 
-    if (method === 'GET' && path === '/api/lists') {
+    if (method === 'GET' && path === '/api/v1/lists') {
       return respondJson(route, lists)
     }
 
-    if (method === 'POST' && path === '/api/lists') {
+    if (method === 'POST' && path === '/api/v1/lists') {
       const body = readJson(request)
       const list = {
         id: nextListId,
@@ -70,7 +70,7 @@ const setupApiMock = async page => {
       return respondJson(route, list, 201)
     }
 
-    const todosPath = path.match(/^\/api\/lists\/(\d+)\/todos$/)
+    const todosPath = path.match(/^\/api\/v1\/lists\/(\d+)\/todos$/)
     if (todosPath) {
       const listId = todosPath[1]
 
@@ -93,7 +93,7 @@ const setupApiMock = async page => {
       }
     }
 
-    const todoPath = path.match(/^\/api\/lists\/(\d+)\/todos\/(\d+)$/)
+    const todoPath = path.match(/^\/api\/v1\/lists\/(\d+)\/todos\/(\d+)$/)
     if (todoPath) {
       const [, listId, todoId] = todoPath
       const currentTodos = todosByList.get(listId) || []
