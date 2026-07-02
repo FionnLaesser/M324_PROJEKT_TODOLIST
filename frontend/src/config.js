@@ -1,3 +1,6 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 export const API_VERSION_HEADER = 'X-API-Version'
 export const API_VERSION = '1'
+export const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:8081'
+export const KEYCLOAK_REALM = import.meta.env.VITE_KEYCLOAK_REALM || 'todo-app'
+export const KEYCLOAK_CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'todo-frontend'

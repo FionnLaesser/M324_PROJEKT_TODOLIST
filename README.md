@@ -1,20 +1,50 @@
 # Todo App
 
-Dieses Projekt ist eine Todo-App mit React im Frontend und Java Spring Boot im Backend. Das Backend speichert die Daten in MySQL und stellt eine REST API unter `/api` bereit. Die API-Version wird über den Header `X-API-Version: 1` gesteuert.
+Dieses Projekt ist eine Todo-App mit React im Frontend, Java Spring Boot im Backend und Keycloak für die Anmeldung. Das Backend speichert die Daten in MySQL und stellt eine REST API unter `/api` bereit. Die API-Version wird über den Header `X-API-Version: 1` gesteuert.
 
 ## Kurzstart
 
-Wenn Docker verwendet wird:
+Wenn Docker verwendet wird, kannst du entweder die Startscripts nutzen oder Docker Compose direkt ausführen.
+
+Windows:
 
 ```powershell
 Copy-Item .env.example .env
+.\start.ps1
+```
+
+Linux:
+
+```bash
+cp .env.example .env
+bash ./start.sh
+```
+
+Direkt ohne Script geht auch:
+
+```bash
 docker compose up --build -d
 ```
+
+Die Scripts führen intern auch `docker compose up --build -d` aus und zeigen danach nur zusätzlich die wichtigsten Ports an.
 
 Danach ist die App hier erreichbar:
 
 ```text
 http://localhost:5173
+```
+
+Keycloak läuft im Compose-Setup zusätzlich hier:
+
+```text
+http://localhost:8081
+```
+
+Login für die App:
+
+```text
+Benutzername: demo
+Passwort: demo
 ```
 
 Wichtig: Die Werte in `.env` müssen vorher sinnvoll gesetzt werden. `JWT_SECRET` muss mindestens 32 Zeichen lang sein und darf kein echtes produktives Secret sein.
@@ -52,11 +82,27 @@ MYSQL_ROOT_PASSWORD=lokales-root-passwort
 JWT_SECRET=lokaler-jwt-schluessel-mit-mindestens-32-zeichen
 JWT_EXPIRATION_MINUTES=120
 CORS_ALLOWED_ORIGINS=http://localhost:5173
+KEYCLOAK_ADMIN_USERNAME=admin
+KEYCLOAK_ADMIN_PASSWORD=admin
 ```
 
-3. Container starten:
+3. Container starten.
+
+Windows:
 
 ```powershell
+.\start.ps1
+```
+
+Linux:
+
+```bash
+bash ./start.sh
+```
+
+Oder direkt mit Docker Compose:
+
+```bash
 docker compose up --build -d
 ```
 
@@ -66,13 +112,28 @@ docker compose up --build -d
 http://localhost:5173
 ```
 
-5. Container stoppen:
+5. Keycloak Admin öffnen:
+
+```text
+http://localhost:8081
+```
+
+6. In der App anmelden:
+
+```text
+http://localhost:5173
+Benutzername: demo
+Passwort: demo
+```
+
+7. Container stoppen:
 
 ```powershell
 docker compose down
 ```
 
 Hinweis: In Docker zeigt das Frontend intern auf `/api`. Nginx leitet diese Requests an das Backend weiter.
+Keycloak wird als eigener Container gestartet und importiert beim ersten Start das Realm aus `keycloak/realm-export.json`. Das Frontend nutzt den Keycloak Authorization-Code-Flow mit PKCE. Das Backend validiert die Access Tokens und legt beim ersten Zugriff automatisch einen lokalen Todo-Benutzer an.
 
 ## Lokaler Start für die Entwicklung
 
@@ -138,6 +199,14 @@ MYSQL_ROOT_PASSWORD=lokales-root-passwort
 JWT_SECRET=dev-only-change-me-123456789012345678901234567890
 JWT_EXPIRATION_MINUTES=120
 CORS_ALLOWED_ORIGINS=http://localhost:5173
+KEYCLOAK_ADMIN_USERNAME=admin
+KEYCLOAK_ADMIN_PASSWORD=admin
+KEYCLOAK_ISSUER_URI=http://localhost:8081/realms/todo-app
+KEYCLOAK_JWK_SET_URI=http://localhost:8081/realms/todo-app/protocol/openid-connect/certs
+KEYCLOAK_CLIENT_ID=todo-frontend
+VITE_KEYCLOAK_URL=http://localhost:8081
+VITE_KEYCLOAK_REALM=todo-app
+VITE_KEYCLOAK_CLIENT_ID=todo-frontend
 ```
 
 `JWT_SECRET` ist für Docker und Produktion Pflicht. Beim lokalen `dev` Profil gibt es zusätzlich einen Dev-Default, damit der Start nicht wegen einem fehlenden Placeholder abbricht. Dieser Default ist nur für Entwicklung gedacht.
@@ -153,7 +222,7 @@ DEV_DB_PASSWORD=
 
 ## API Versionierung
 
-Die REST API nutzt Request Header Versioning. Die URL bleibt normal, zum Beispiel `/api/auth/login`. Die Version wird über diesen Header mitgegeben:
+Die REST API nutzt Request Header Versioning. Die URL bleibt normal, zum Beispiel `/api/lists`. Die Version wird über diesen Header mitgegeben:
 
 ```text
 X-API-Version: 1
@@ -166,8 +235,6 @@ Mehr Details stehen hier: [docs/api-versionierung.md](docs/api-versionierung.md)
 Beispiel-Endpunkte:
 
 ```text
-POST /api/auth/register
-POST /api/auth/login
 GET  /api/version
 GET  /api/lists
 POST /api/lists
@@ -175,14 +242,7 @@ GET  /api/lists/{listId}/todos
 POST /api/lists/{listId}/todos
 ```
 
-Login mit curl:
-
-```bash
-curl -i -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -H "X-API-Version: 1" \
-  -d "{\"username\":\"lisa\",\"password\":\"geheimespasswort\"}"
-```
+Die Todo-Endpunkte erwarten zusätzlich einen Keycloak Bearer Token im Header `Authorization`. Der normale Login läuft deshalb über das Frontend und Keycloak.
 
 Version 1 und 2 mit curl zeigen:
 
@@ -239,8 +299,9 @@ npm run test:e2e
 
 - Port `5173` ist belegt: Frontend stoppen oder einen anderen Vite-Port verwenden.
 - Port `8080` ist belegt: anderes Backend stoppen.
+- Port `8081` ist belegt: anderen Keycloak-Port in `docker-compose.yml` setzen oder den belegenden Dienst stoppen.
 - Backend startet nicht: Prüfen, ob Port `8080` frei ist und ob das Log einen konkreten Fehler zeigt.
-- Login geht nicht: Prüfen, ob Frontend und Backend laufen und ob der Header `X-API-Version: 1` gesendet wird.
+- Login geht nicht: Prüfen, ob Frontend, Backend und Keycloak laufen. Danach `docker compose logs keycloak backend` anschauen.
 - Docker startet nicht: Prüfen, ob Docker Desktop läuft und `.env` vorhanden ist.
 - `502 Bad Gateway`: Meistens läuft das Backend nicht. Logs prüfen mit `docker compose logs backend`.
 
@@ -249,3 +310,4 @@ npm run test:e2e
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8080`
 - API Prefix: `http://localhost:8080/api`
+- Keycloak: `http://localhost:8081`
