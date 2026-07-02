@@ -16,13 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.TodoRequest;
 import com.example.demo.dto.TodoResponse;
+import com.example.demo.security.ApiVersionFilter;
 import com.example.demo.security.AuthenticatedUser;
 import com.example.demo.service.TodoService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/lists/{listId}/todos")
+@RequestMapping(value = "/api/lists/{listId}/todos", headers = ApiVersionFilter.VERSION_1_HEADER)
 public class TodoController {
 
 	private final TodoService todoService;

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 const corsHeaders = {
-  'access-control-allow-headers': 'authorization, content-type',
+  'access-control-allow-headers': 'authorization, content-type, x-api-version',
   'access-control-allow-methods': 'GET,POST,PUT,DELETE,OPTIONS',
   'access-control-allow-origin': '*',
 }
@@ -48,8 +48,8 @@ const setupApiMock = async page => {
       return respondEmpty(route)
     }
 
-    if (method === 'POST' && path === '/api/auth/login') {
-      return respondJson(route, { token: 'e2e-token', userId: 1, username: 'lisa' })
+    if (request.headers()['x-api-version'] !== '1') {
+      return respondJson(route, { message: 'API-Version fehlt oder wird nicht unterstützt' }, 400)
     }
 
     if (method === 'GET' && path === '/api/lists') {
@@ -128,19 +128,16 @@ const setupApiMock = async page => {
 }
 
 test.describe('sichtbare Frontend-Tests', () => {
-  test('zeigt Login, Liste, Todo, Filter, Bearbeiten und Erledigen im Browser', async ({ page }) => {
+  test('zeigt Liste, Todo, Filter, Bearbeiten und Erledigen im Browser', async ({ page }) => {
     await setupApiMock(page)
-
-    await test.step('Login Formular öffnen', async () => {
-      await page.goto('/')
-      await expect(page.getByRole('heading', { name: 'Todo App' })).toBeVisible()
-      await showProgress(page)
+    await page.addInitScript(() => {
+      localStorage.setItem('todo.auth.token', 'e2e-token')
+      localStorage.setItem('todo.auth.refreshToken', 'e2e-refresh-token')
+      localStorage.setItem('todo.auth.user', JSON.stringify({ id: 1, username: 'lisa' }))
     })
 
-    await test.step('Benutzer anmelden', async () => {
-      await page.getByLabel('Benutzername').fill('lisa')
-      await page.getByLabel('Passwort').fill('geheim')
-      await page.getByRole('button', { name: 'Einloggen' }).click()
+    await test.step('Todo-App öffnen', async () => {
+      await page.goto('/')
       await expect(page.locator('.app-header')).toContainText('Angemeldet als lisa')
       await showProgress(page)
     })

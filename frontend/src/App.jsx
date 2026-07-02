@@ -1,10 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
-import { API_BASE_URL } from './config.js'
+import { API_BASE_URL, API_VERSION, API_VERSION_HEADER } from './config.js'
+import {
+  beginKeycloakLogin,
+  completeKeycloakLogin,
+  createKeycloakLogoutUrl,
+  isTokenExpired,
+  refreshKeycloakAuth,
+} from './keycloakAuth.js'
 
 const DEFAULT_PRIORITY = 'Mittel'
 const PRIORITIES = ['Niedrig', 'Mittel', 'Hoch']
+const KEYCLOAK_ROLE_ORDER = ['todo-user', 'todo-admin']
+const POLLING_INTERVAL_MS = 10000
 const AUTH_TOKEN_KEY = 'todo.auth.token'
+const AUTH_REFRESH_TOKEN_KEY = 'todo.auth.refreshToken'
+const AUTH_ID_TOKEN_KEY = 'todo.auth.idToken'
 const AUTH_USER_KEY = 'todo.auth.user'
 
 const emptyTodoForm = {
@@ -34,20 +45,28 @@ const extractInviteToken = value => {
   }
 }
 
+const removeStoredAuth = () => {
+  localStorage.removeItem(AUTH_TOKEN_KEY)
+  localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY)
+  localStorage.removeItem(AUTH_ID_TOKEN_KEY)
+  localStorage.removeItem(AUTH_USER_KEY)
+}
+
 const getStoredAuth = () => {
   const token = localStorage.getItem(AUTH_TOKEN_KEY)
+  const refreshToken = localStorage.getItem(AUTH_REFRESH_TOKEN_KEY) || ''
+  const idToken = localStorage.getItem(AUTH_ID_TOKEN_KEY) || ''
   const userJson = localStorage.getItem(AUTH_USER_KEY)
 
   if (!token || !userJson) {
-    return { token: '', user: null }
+    return { token: '', refreshToken: '', idToken: '', user: null }
   }
 
   try {
-    return { token, user: JSON.parse(userJson) }
+    return { token, refreshToken, idToken, user: JSON.parse(userJson) }
   } catch {
-    localStorage.removeItem(AUTH_TOKEN_KEY)
-    localStorage.removeItem(AUTH_USER_KEY)
-    return { token: '', user: null }
+    removeStoredAuth()
+    return { token: '', refreshToken: '', idToken: '', user: null }
   }
 }
 
@@ -67,8 +86,7 @@ const getErrorMessage = payload => {
 
 function App() {
   const [auth, setAuth] = useState(getStoredAuth)
-  const [authMode, setAuthMode] = useState('login')
-  const [credentials, setCredentials] = useState({ username: '', password: '' })
+  const [authReady, setAuthReady] = useState(false)
   const [authError, setAuthError] = useState('')
 
   const [lists, setLists] = useState([])
@@ -87,23 +105,128 @@ function App() {
   const [appMessage, setAppMessage] = useState('')
   const [appError, setAppError] = useState('')
 
-  const isAuthenticated = Boolean(auth.token)
+  const isAuthenticated = authReady && Boolean(auth.token)
   const activeList = lists.find(list => String(list.id) === String(activeListId))
   const canCreateInvite = activeList?.role === 'OWNER'
+  const authDetails = useMemo(() => {
+    if (!auth.user) {
+      return []
+    }
+
+    const visibleRoles = (auth.user.roles || [])
+      .filter(role => role.startsWith('todo-'))
+      .sort((leftRole, rightRole) => {
+        const leftIndex = KEYCLOAK_ROLE_ORDER.indexOf(leftRole)
+        const rightIndex = KEYCLOAK_ROLE_ORDER.indexOf(rightRole)
+
+        if (leftIndex === -1 || rightIndex === -1) {
+          return leftRole.localeCompare(rightRole)
+        }
+
+        return leftIndex - rightIndex
+      })
+    const groups = auth.user.groups || []
+
+    return [
+      auth.user.realm ? `Realm: ${auth.user.realm}` : '',
+      auth.user.clientId ? `Client: ${auth.user.clientId}` : '',
+      visibleRoles.length > 0 ? `Rollen: ${visibleRoles.join(', ')}` : '',
+      groups.length > 0 ? `Gruppen: ${groups.join(', ')}` : '',
+    ].filter(Boolean)
+  }, [auth.user])
+
+  const saveAuth = useCallback(data => {
+    localStorage.setItem(AUTH_TOKEN_KEY, data.token)
+    localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, data.refreshToken || '')
+    localStorage.setItem(AUTH_ID_TOKEN_KEY, data.idToken || '')
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user))
+    setAuth({
+      token: data.token,
+      refreshToken: data.refreshToken || '',
+      idToken: data.idToken || '',
+      user: data.user,
+    })
+  }, [])
 
   const clearSession = useCallback(() => {
-    localStorage.removeItem(AUTH_TOKEN_KEY)
-    localStorage.removeItem(AUTH_USER_KEY)
-    setAuth({ token: '', user: null })
+    removeStoredAuth()
+    setAuth({ token: '', refreshToken: '', idToken: '', user: null })
     setLists([])
     setTodos([])
     setActiveListId('')
     setGeneratedInviteLink('')
   }, [])
 
+  useEffect(() => {
+    let isMounted = true
+
+    const applyInviteFromReturnPath = returnTo => {
+      const queryStart = returnTo.indexOf('?')
+
+      if (queryStart < 0) {
+        return
+      }
+
+      const returnedInviteToken = new URLSearchParams(returnTo.slice(queryStart)).get('invite')
+
+      if (returnedInviteToken) {
+        setInviteToken(returnedInviteToken)
+      }
+    }
+
+    const initializeAuth = async () => {
+      try {
+        const callbackAuth = await completeKeycloakLogin()
+
+        if (!isMounted) {
+          return
+        }
+
+        if (callbackAuth) {
+          saveAuth(callbackAuth)
+          applyInviteFromReturnPath(callbackAuth.returnTo)
+          window.history.replaceState({}, '', callbackAuth.returnTo || '/')
+          setAppMessage(`Angemeldet als ${callbackAuth.user.username}`)
+          return
+        }
+
+        const storedAuth = getStoredAuth()
+
+        if (storedAuth.token && storedAuth.refreshToken && isTokenExpired(storedAuth.token)) {
+          const refreshedAuth = await refreshKeycloakAuth(storedAuth.refreshToken)
+
+          if (isMounted) {
+            saveAuth(refreshedAuth)
+          }
+        } else if (storedAuth.token) {
+          setAuth(storedAuth)
+        }
+      } catch (error) {
+        if (isMounted) {
+          clearSession()
+          setAuthError(error.message)
+          window.history.replaceState({}, '', window.location.pathname)
+        }
+      } finally {
+        if (isMounted) {
+          setAuthReady(true)
+        }
+      }
+    }
+
+    initializeAuth()
+
+    return () => {
+      isMounted = false
+    }
+  }, [clearSession, saveAuth])
+
   const request = useCallback(
     async (path, options = {}) => {
-      const headers = { ...(options.headers || {}) }
+      const headers = {
+        [API_VERSION_HEADER]: API_VERSION,
+        ...(options.headers || {}),
+      }
 
       if (options.body !== undefined) {
         headers['Content-Type'] = 'application/json'
@@ -172,6 +295,22 @@ function App() {
     loadTodos(activeListId).catch(error => setAppError(error.message))
   }, [activeListId, isAuthenticated, loadTodos])
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return undefined
+    }
+
+    const intervalId = window.setInterval(() => {
+      loadLists().catch(error => setAppError(error.message))
+
+      if (activeListId) {
+        loadTodos(activeListId).catch(error => setAppError(error.message))
+      }
+    }, POLLING_INTERVAL_MS)
+
+    return () => window.clearInterval(intervalId)
+  }, [activeListId, isAuthenticated, loadLists, loadTodos])
+
   const filteredTodos = useMemo(() => {
     const normalizedFilter = filterText.trim().toLowerCase()
 
@@ -184,30 +323,20 @@ function App() {
     })
   }, [filterPriority, filterText, todos])
 
-  const saveAuth = data => {
-    const user = { id: data.userId, username: data.username }
-    localStorage.setItem(AUTH_TOKEN_KEY, data.token)
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user))
-    setAuth({ token: data.token, user })
-  }
-
-  const handleAuthSubmit = async event => {
-    event.preventDefault()
+  const handleKeycloakLogin = async () => {
     setAuthError('')
 
     try {
-      const path = authMode === 'login' ? '/auth/login' : '/auth/register'
-      const data = await request(path, {
-        method: 'POST',
-        body: JSON.stringify(credentials),
-      })
-
-      saveAuth(data)
-      setCredentials({ username: '', password: '' })
-      setAppMessage(`Angemeldet als ${data.username}`)
+      await beginKeycloakLogin(`${window.location.pathname}${window.location.search}`)
     } catch (error) {
       setAuthError(error.message)
     }
+  }
+
+  const handleLogout = () => {
+    const logoutUrl = createKeycloakLogoutUrl(auth.idToken)
+    clearSession()
+    window.location.assign(logoutUrl)
   }
 
   const handleCreateList = async event => {
@@ -426,55 +555,33 @@ function App() {
     )
   }
 
+  if (!authReady) {
+    return (
+      <main className="app auth-view">
+        <section className="auth-panel" aria-label="Anmeldung">
+          <h1>Todo App</h1>
+          <p className="info-message">Anmeldung wird geprüft.</p>
+        </section>
+      </main>
+    )
+  }
+
   if (!isAuthenticated) {
     return (
       <main className="app auth-view">
         <section className="auth-panel" aria-label="Anmeldung">
           <h1>Todo App</h1>
-          <div className="auth-tabs" role="tablist" aria-label="Authentifizierung">
-            <button
-              type="button"
-              className={authMode === 'login' ? 'tab-button active' : 'tab-button'}
-              onClick={() => setAuthMode('login')}
-            >
-              Login
-            </button>
-            <button
-              type="button"
-              className={authMode === 'register' ? 'tab-button active' : 'tab-button'}
-              onClick={() => setAuthMode('register')}
-            >
-              Registrierung
-            </button>
-          </div>
-
-          <form className="auth-form" onSubmit={handleAuthSubmit}>
-            <label>
-              Benutzername
-              <input
-                type="text"
-                autoComplete="username"
-                value={credentials.username}
-                onChange={event => setCredentials({ ...credentials, username: event.target.value })}
-              />
-            </label>
-            <label>
-              Passwort
-              <input
-                type="password"
-                autoComplete={authMode === 'login' ? 'current-password' : 'new-password'}
-                value={credentials.password}
-                onChange={event => setCredentials({ ...credentials, password: event.target.value })}
-              />
-            </label>
+          <div className="auth-form">
             {authError && <p className="error-message">{authError}</p>}
             {inviteToken && (
               <p className="info-message">
                 Nach der Anmeldung kannst du die geteilte Liste annehmen.
               </p>
             )}
-            <button type="submit">{authMode === 'login' ? 'Einloggen' : 'Registrieren'}</button>
-          </form>
+            <button type="button" onClick={handleKeycloakLogin}>
+              Mit Keycloak anmelden
+            </button>
+          </div>
         </section>
       </main>
     )
@@ -486,8 +593,9 @@ function App() {
         <div>
           <h1>ToDo Listen</h1>
           <p>Angemeldet als {auth.user?.username}</p>
+          {authDetails.length > 0 && <p>{authDetails.join(' | ')}</p>}
         </div>
-        <button type="button" className="secondary-button" onClick={clearSession}>
+        <button type="button" className="secondary-button" onClick={handleLogout}>
           Logout
         </button>
       </header>
