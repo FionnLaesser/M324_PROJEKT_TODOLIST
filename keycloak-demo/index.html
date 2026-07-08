@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keycloak Demo Port 5174</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">KC</div>
+          <div>
+            <p class="eyebrow">Port 5174</p>
+            <h1>Keycloak Mehrfach-Login</h1>
+          </div>
+        </div>
+        <a class="main-link" href="http://localhost:5173">Todo App 5173</a>
+      </header>
+
+      <main class="layout">
+        <section class="intro">
+          <div class="intro-copy">
+            <p class="eyebrow">Zweite Webseite</p>
+            <h2>Gleicher Realm, gleicher Client, anderer Port.</h2>
+            <p>
+              Diese Seite meldet sich mit demselben Keycloak Client an wie die Todo App.
+              Danach zeigt sie Token-Daten und prüft das Backend mit demselben Bearer Token.
+            </p>
+          </div>
+
+          <div class="topology" aria-label="Keycloak Verbindung">
+            <div class="node muted">Todo App<br /><span>5173</span></div>
+            <div class="connector" aria-hidden="true"></div>
+            <div class="node keycloak">Keycloak<br /><span>8081</span></div>
+            <div class="connector" aria-hidden="true"></div>
+            <div class="node active">Demo<br /><span>5174</span></div>
+          </div>
+        </section>
+
+        <section class="panel auth-panel" aria-label="Anmeldestatus">
+          <div>
+            <p class="eyebrow">Status</p>
+            <h2 id="auth-title">Nicht angemeldet</h2>
+            <p id="auth-message">Melde dich über Keycloak an, um die gemeinsamen Token-Daten zu sehen.</p>
+          </div>
+          <div class="actions">
+            <button id="login-button" type="button">Mit Keycloak anmelden</button>
+            <button id="backend-button" type="button" class="secondary-button">Backend prüfen</button>
+            <button id="refresh-button" type="button" class="secondary-button">Token aktualisieren</button>
+            <button id="logout-button" type="button" class="danger-button">Abmelden</button>
+          </div>
+        </section>
+
+        <section id="meme-panel" class="panel meme-panel" aria-label="Works on my machine Meme" hidden>
+          <div
+            class="tenor-gif-embed"
+            data-postid="24523830"
+            data-share-method="host"
+            data-aspect-ratio="1"
+            data-width="100%"
+          >
+            <a href="https://tenor.com/view/works-on-my-machine-ryan-gosling-works-on-my-gif-24523830">
+              Works On My Machine Ryan Gosling GIF
+            </a>
+            <span>from </span>
+            <a href="https://tenor.com/search/works+on+my+machine-gifs">Works On My Machine GIFs</a>
+          </div>
+        </section>
+
+        <section class="grid" aria-label="Token Details">
+          <article class="metric">
+            <span>Benutzer</span>
+            <strong id="user-value">-</strong>
+          </article>
+          <article class="metric">
+            <span>Realm</span>
+            <strong id="realm-value">todo-app</strong>
+          </article>
+          <article class="metric">
+            <span>Client</span>
+            <strong id="client-value">todo-frontend</strong>
+          </article>
+          <article class="metric">
+            <span>Ablauf</span>
+            <strong id="expiry-value">-</strong>
+          </article>
+        </section>
+
+        <section class="details">
+          <div class="panel">
+            <p class="eyebrow">Rollen und Gruppen</p>
+            <dl class="data-list">
+              <div>
+                <dt>Rollen</dt>
+                <dd id="roles-value">-</dd>
+              </div>
+              <div>
+                <dt>Gruppen</dt>
+                <dd id="groups-value">-</dd>
+              </div>
+              <div>
+                <dt>Issuer</dt>
+                <dd id="issuer-value">-</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="panel">
+            <p class="eyebrow">Backend Prüfung</p>
+            <div id="backend-result" class="result-box">Noch nicht geprüft.</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+    <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+  </body>
+</html>

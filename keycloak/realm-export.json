@@ -7,13 +7,13 @@
     "realm": [
       {
         "name": "todo-user",
-        "description": "Standardrolle fuer Todo-Benutzer",
+        "description": "Standardrolle für Todo-Benutzer",
         "composite": false,
         "clientRole": false
       },
       {
         "name": "todo-admin",
-        "description": "Adminrolle fuer die Todo-App",
+        "description": "Adminrolle für die Todo-App",
         "composite": false,
         "clientRole": false
       }
@@ -39,14 +39,16 @@
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
       "redirectUris": [
-        "http://localhost:5173/*"
+        "http://localhost:5173/*",
+        "http://localhost:5174/*"
       ],
       "webOrigins": [
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "http://localhost:5174"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:5173/*"
+        "post.logout.redirect.uris": "+"
       },
       "protocolMappers": [
         {

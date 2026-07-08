@@ -34,6 +34,12 @@ Danach ist die App hier erreichbar:
 http://localhost:5173
 ```
 
+Die zweite kleine Keycloak-Demo läuft hier:
+
+```text
+http://localhost:5174
+```
+
 Keycloak läuft im Compose-Setup zusätzlich hier:
 
 ```text
@@ -61,6 +67,7 @@ Wichtig: Die Werte in `.env` müssen vorher sinnvoll gesetzt werden. `JWT_SECRET
 ```text
 backend/    Spring Boot REST API
 frontend/   React Frontend mit Vite
+keycloak-demo/  Kleine zweite Webseite für Keycloak auf Port 5174
 docs/       Dokumentationen
 ```
 
@@ -81,7 +88,7 @@ DB_PASSWORD=lokales-datenbank-passwort
 MYSQL_ROOT_PASSWORD=lokales-root-passwort
 JWT_SECRET=lokaler-jwt-schluessel-mit-mindestens-32-zeichen
 JWT_EXPIRATION_MINUTES=120
-CORS_ALLOWED_ORIGINS=http://localhost:5173
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174
 KEYCLOAK_ADMIN_USERNAME=admin
 KEYCLOAK_ADMIN_PASSWORD=admin
 ```
@@ -112,21 +119,28 @@ docker compose up --build -d
 http://localhost:5173
 ```
 
-5. Keycloak Admin öffnen:
+5. Zweite Keycloak-Demo öffnen:
+
+```text
+http://localhost:5174
+```
+
+6. Keycloak Admin öffnen:
 
 ```text
 http://localhost:8081
 ```
 
-6. In der App anmelden:
+7. In der App oder in der Demo anmelden:
 
 ```text
 http://localhost:5173
+http://localhost:5174
 Benutzername: demo
 Passwort: demo
 ```
 
-7. Container stoppen:
+8. Container stoppen:
 
 ```powershell
 docker compose down
@@ -134,6 +148,9 @@ docker compose down
 
 Hinweis: In Docker zeigt das Frontend intern auf `/api`. Nginx leitet diese Requests an das Backend weiter.
 Keycloak wird als eigener Container gestartet und importiert beim ersten Start das Realm aus `keycloak/realm-export.json`. Das Frontend nutzt den Keycloak Authorization-Code-Flow mit PKCE. Das Backend validiert die Access Tokens und legt beim ersten Zugriff automatisch einen lokalen Todo-Benutzer an.
+Die zweite Demo nutzt denselben Realm und denselben Public Client `todo-frontend`, aber den Origin `http://localhost:5174`.
+
+Wenn Keycloak schon einmal mit einem alten Docker-Volume gestartet wurde, wird der Realm-Import nicht erneut angewendet. Dann im Keycloak Admin beim Client `todo-frontend` `http://localhost:5174/*` bei den Valid Redirect URIs und `http://localhost:5174` bei den Web Origins ergänzen, oder das Keycloak-Volume für einen frischen Import neu erstellen.
 
 ## Lokaler Start für die Entwicklung
 
@@ -187,6 +204,27 @@ Das Frontend verwendet standardmässig diese API:
 http://localhost:8080/api
 ```
 
+### 3. Zweite Keycloak-Demo starten
+
+Die zweite Webseite ist statisch und kann separat auf Port `5174` gestartet werden:
+
+```powershell
+cd keycloak-demo
+npx vite --host 127.0.0.1 --port 5174
+```
+
+Danach ist sie hier erreichbar:
+
+```text
+http://localhost:5174
+```
+
+Für den lokalen Backend-Start muss `CORS_ALLOWED_ORIGINS` beide Origins enthalten:
+
+```env
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174
+```
+
 ## Benötigte ENV Variablen
 
 Für Docker und den Start ohne `dev` Profil gibt es Beispielwerte in `.env.example`. Die Datei darf kopiert, aber echte Secrets dürfen nicht ins Git committet werden.
@@ -198,7 +236,7 @@ DB_PASSWORD=lokales-datenbank-passwort
 MYSQL_ROOT_PASSWORD=lokales-root-passwort
 JWT_SECRET=dev-only-change-me-123456789012345678901234567890
 JWT_EXPIRATION_MINUTES=120
-CORS_ALLOWED_ORIGINS=http://localhost:5173
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174
 KEYCLOAK_ADMIN_USERNAME=admin
 KEYCLOAK_ADMIN_PASSWORD=admin
 KEYCLOAK_ISSUER_URI=http://localhost:8081/realms/todo-app
@@ -298,6 +336,7 @@ npm run test:e2e
 ## Häufige Probleme
 
 - Port `5173` ist belegt: Frontend stoppen oder einen anderen Vite-Port verwenden.
+- Port `5174` ist belegt: Keycloak-Demo stoppen oder einen anderen Port verwenden und den Origin in Keycloak ergänzen.
 - Port `8080` ist belegt: anderes Backend stoppen.
 - Port `8081` ist belegt: anderen Keycloak-Port in `docker-compose.yml` setzen oder den belegenden Dienst stoppen.
 - Backend startet nicht: Prüfen, ob Port `8080` frei ist und ob das Log einen konkreten Fehler zeigt.
@@ -308,6 +347,7 @@ npm run test:e2e
 ## Nützliche Links
 
 - Frontend: `http://localhost:5173`
+- Keycloak-Demo: `http://localhost:5174`
 - Backend: `http://localhost:8080`
 - API Prefix: `http://localhost:8080/api`
 - Keycloak: `http://localhost:8081`
