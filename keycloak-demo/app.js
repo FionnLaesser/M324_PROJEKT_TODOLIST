@@ -143,6 +143,7 @@ const renderSession = () => {
   elements.loginButton.disabled = isAuthenticated
   elements.logoutButton.disabled = !isAuthenticated
   elements.refreshButton.disabled = !isAuthenticated || !session.refreshToken
+  elements.memePanel.hidden = !isAuthenticated
 }
 
 const beginLogin = async () => {
@@ -288,6 +289,7 @@ const cacheElements = () => {
   elements.backendButton = query('#backend-button')
   elements.refreshButton = query('#refresh-button')
   elements.logoutButton = query('#logout-button')
+  elements.memePanel = query('#meme-panel')
   elements.backendResult = query('#backend-result')
   elements.userValue = query('#user-value')
   elements.realmValue = query('#realm-value')
